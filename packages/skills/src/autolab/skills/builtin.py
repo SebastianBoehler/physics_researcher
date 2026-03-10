@@ -176,15 +176,41 @@ def _rank_candidates(payload: RankCandidatesInput, _: SkillContext) -> RankCandi
 def _compare_recent(
     payload: CompareRecentExperimentsInput, _: SkillContext
 ) -> CompareRecentExperimentsOutput:
-    objective_values = [run.metrics.get("conductivity", 0.0) for run in payload.runs if run.metrics]
-    if not objective_values:
+    completed_runs = [run for run in payload.runs if run.metrics]
+    feasible_runs = [run for run in completed_runs if _is_feasible_run(run)]
+    infeasible_runs = [run for run in completed_runs if not _is_feasible_run(run)]
+    if not feasible_runs and not completed_runs:
         return CompareRecentExperimentsOutput(summary="No completed experiments to compare.")
+    if not feasible_runs:
+        raw_best = max(
+            float(run.metadata.get("objective_score", run.metrics.get("conductivity", 0.0)))
+            for run in completed_runs
+        )
+        return CompareRecentExperimentsOutput(
+            summary=(
+                "No feasible completed experiments. "
+                f"Recent infeasible runs={len(infeasible_runs)}, "
+                f"best raw objective={raw_best:.3f}."
+            )
+        )
+    objective_values = [
+        float(run.metadata.get("objective_score", run.metrics.get("conductivity", 0.0)))
+        for run in feasible_runs
+    ]
     return CompareRecentExperimentsOutput(
         summary=(
-            f"Recent mean conductivity={mean(objective_values):.3f}, "
-            f"best={max(objective_values):.3f}, count={len(objective_values)}."
+            f"Feasible recent mean objective={mean(objective_values):.3f}, "
+            f"best feasible={max(objective_values):.3f}, feasible_count={len(feasible_runs)}, "
+            f"infeasible_count={len(infeasible_runs)}."
         )
     )
+
+
+def _is_feasible_run(run: SimulationRun) -> bool:
+    validation = run.metadata.get("validation", {})
+    if isinstance(validation, dict) and "valid" in validation:
+        return bool(validation["valid"])
+    return run.status.value == "succeeded" and run.failure_class.value == "none"
 
 
 def get_builtin_skills() -> SkillRegistry:

@@ -16,7 +16,7 @@ from autolab.core.models import (
 )
 from autolab.core.settings import Settings
 from autolab.core.utils import sha256_digest, stable_json_dumps
-from autolab.evaluation import validate_constraints
+from autolab.evaluation import compute_objective_score, validate_constraints
 from autolab.optimizers import BayesianOptimizer
 from autolab.skills import SkillContext, get_builtin_skills
 from autolab.storage import (
@@ -31,6 +31,13 @@ from autolab.storage.repositories import OptimizerStateRepository
 from autolab.telemetry import get_logger
 
 logger = get_logger(__name__)
+
+
+def _is_feasible_run(run: SimulationRun) -> bool:
+    validation = run.metadata.get("validation", {})
+    if isinstance(validation, dict) and "valid" in validation:
+        return bool(validation["valid"])
+    return run.status == RunStatus.SUCCEEDED and run.failure_class == FailureClass.NONE
 
 
 class CampaignService:
@@ -143,9 +150,9 @@ class CampaignService:
                     campaign_id=campaign.id,
                     algorithm=optimizer_state.algorithm,
                     observation_count=len(
-                        [run for run in executed_runs if run.status == RunStatus.SUCCEEDED]
+                        [run for run in executed_runs if _is_feasible_run(run)]
                     )
-                    + len([run for run in prior_runs if run.status == RunStatus.SUCCEEDED]),
+                    + len([run for run in prior_runs if _is_feasible_run(run)]),
                     payload=optimizer_state.payload,
                 )
             )
@@ -236,6 +243,8 @@ class CampaignService:
         run.metrics = result.metrics
         run.metadata = {
             **run.metadata,
+            "feasible": validation.valid,
+            "objective_score": self._objective_score(campaign, result.metrics),
             "prepared_input": prepared.simulation_input.payload,
             "validation": validation.model_dump(mode="json"),
             "simulator_validation": simulator_report.model_dump(mode="json"),
@@ -268,6 +277,9 @@ class CampaignService:
             )
         )
         return run
+
+    def _objective_score(self, campaign: Campaign, metrics: dict[str, float]) -> float:
+        return compute_objective_score(campaign.objectives, metrics)
 
 
 class RunService:

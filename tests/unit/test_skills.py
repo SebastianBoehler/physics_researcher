@@ -1,5 +1,5 @@
 from autolab.core.enums import ConstraintOperator
-from autolab.core.models import Candidate, Constraint
+from autolab.core.models import Candidate, Constraint, SimulationRun
 from autolab.skills import get_builtin_skills
 
 
@@ -49,3 +49,35 @@ def test_validate_constraints_skill_reports_actual_violations() -> None:
 
     assert result.valid is False
     assert result.issues
+
+
+def test_compare_recent_experiments_uses_feasible_runs_for_summary() -> None:
+    registry = get_builtin_skills()
+    skill = registry.get("compare_recent_experiments")
+    runs = [
+        SimulationRun(
+            campaign_id="00000000-0000-0000-0000-000000000001",
+            candidate_id="00000000-0000-0000-0000-000000000011",
+            simulator="fake",
+            metrics={"conductivity": 100.0},
+            metadata={
+                "objective_score": 100.0,
+                "validation": {"valid": False},
+            },
+        ),
+        SimulationRun(
+            campaign_id="00000000-0000-0000-0000-000000000001",
+            candidate_id="00000000-0000-0000-0000-000000000012",
+            simulator="fake",
+            metrics={"conductivity": 20.0},
+            metadata={
+                "objective_score": 20.0,
+                "validation": {"valid": True},
+            },
+        ),
+    ]
+
+    result = skill.run(skill.input_model(runs=runs), context=None)  # type: ignore[arg-type]
+
+    assert "best feasible=20.000" in result.summary
+    assert "infeasible_count=1" in result.summary

@@ -13,6 +13,7 @@ from autolab.core.models import (
     SearchSpaceDimension,
     SimulationRun,
 )
+from autolab.evaluation import compute_objective_score
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern, WhiteKernel
 
@@ -89,13 +90,13 @@ class BayesianOptimizer:
         features: list[np.ndarray] = []
         targets: list[float] = []
         for run in previous_runs:
-            if run.status.value != "succeeded":
+            if not self._is_feasible_run(run):
                 continue
             candidate = candidate_map.get(run.candidate_id)
             if candidate is None or not run.metrics:
                 continue
             features.append(self._encode_values(campaign, candidate.values))
-            targets.append(float(run.metrics.get(campaign.objectives[0].metric_key, 0.0)))
+            targets.append(compute_objective_score(campaign.objectives, run.metrics))
         return {"features": features, "targets": targets}
 
     def _sample_candidate(
@@ -146,6 +147,7 @@ class BayesianOptimizer:
     ) -> OptimizerState:
         payload = dict(previous_payload or {})
         payload["best_observed_objective"] = max(targets) if targets else None
+        payload["feasible_observation_count"] = len(targets)
         payload["candidate_pool_size"] = self._candidate_pool_size
         return OptimizerState(
             campaign_id=campaign.id,
@@ -153,3 +155,9 @@ class BayesianOptimizer:
             observation_count=len(targets),
             payload=payload,
         )
+
+    def _is_feasible_run(self, run: SimulationRun) -> bool:
+        validation = run.metadata.get("validation", {})
+        if isinstance(validation, dict) and "valid" in validation:
+            return bool(validation["valid"])
+        return run.status.value == "succeeded" and run.failure_class.value == "none"

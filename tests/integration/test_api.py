@@ -62,6 +62,8 @@ def test_step_marks_constraint_violations_in_validation_metadata() -> None:
     assert all(run["metadata"]["validation"]["valid"] is False for run in runs)
     assert all(run["failure_class"] == "validation" for run in runs)
     assert all(run["metadata"]["constraint_validation"]["valid"] is False for run in runs)
+    assert all(run["metadata"]["feasible"] is False for run in runs)
+    assert all("objective_score" in run["metadata"] for run in runs)
     assert all(
         run["metadata"]["simulator_validation"]["run_id"] == run["id"] for run in runs
     )
