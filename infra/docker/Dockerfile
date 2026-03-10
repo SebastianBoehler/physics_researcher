@@ -1,0 +1,26 @@
+FROM python:3.12-slim
+
+ENV UV_LINK_MODE=copy \
+    UV_COMPILE_BYTECODE=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir uv==0.9.5
+
+WORKDIR /workspace
+
+COPY pyproject.toml .python-version README.md ./
+COPY apps ./apps
+COPY packages ./packages
+
+RUN uv sync --all-packages
+
+COPY . .
+
+CMD ["uv", "run", "uvicorn", "autolab.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,0 +1,50 @@
+{
+  "name": "demo-conductivity-campaign",
+  "description": "Synthetic conductivity optimization using the fake simulator.",
+  "mode": "materials_discovery",
+  "objectives": [
+    {
+      "name": "maximize_conductivity",
+      "metric_key": "conductivity",
+      "direction": "maximize",
+      "weight": 1.0
+    }
+  ],
+  "constraints": [
+    {
+      "name": "cost_threshold",
+      "metric_key": "cost",
+      "operator": "lt",
+      "threshold": 55.0
+    },
+    {
+      "name": "stability_threshold",
+      "metric_key": "stability",
+      "operator": "gt",
+      "threshold": 0.7
+    }
+  ],
+  "search_space": {
+    "dimensions": [
+      { "name": "dopant_ratio", "kind": "continuous", "lower": 0.05, "upper": 0.5, "choices": [] },
+      {
+        "name": "anneal_temperature",
+        "kind": "continuous",
+        "lower": 450.0,
+        "upper": 750.0,
+        "choices": []
+      },
+      { "name": "pressure", "kind": "continuous", "lower": 0.5, "upper": 3.5, "choices": [] },
+      { "name": "synthesis_time", "kind": "continuous", "lower": 1.0, "upper": 5.0, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 4,
+    "batch_size": 2,
+    "max_failures": 2
+  },
+  "simulator": "fake",
+  "seed": 42,
+  "tags": ["demo", "fake-simulator"],
+  "metadata": { "campaign_type": "seeded_demo" }
+}

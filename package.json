@@ -1,0 +1,13 @@
+{
+  "name": "physics-researcher-repo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Formatting and repository tooling for the physics_researcher monorepo.",
+  "scripts": {
+    "format": "prettier --write \"**/*.{md,json,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{md,json,yml,yaml}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3"
+  }
+}

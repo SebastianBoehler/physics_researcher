@@ -1,0 +1,22 @@
+[project]
+name = "autolab-telemetry"
+version = "0.1.0"
+description = "Logging and tracing helpers."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "autolab-core",
+  "opentelemetry-api>=1.31.1",
+  "opentelemetry-exporter-otlp>=1.31.1",
+  "opentelemetry-sdk>=1.31.1",
+  "structlog>=25.2.0",
+]
+
+[tool.uv.sources]
+autolab-core = { workspace = true }
+
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/autolab"]

@@ -1,0 +1,24 @@
+[project]
+name = "autolab-storage"
+version = "0.1.0"
+description = "Persistence and repositories."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "autolab-core",
+  "autolab-telemetry",
+  "alembic>=1.15.1",
+  "asyncpg>=0.30.0",
+  "psycopg[binary]>=3.2.6",
+  "sqlalchemy>=2.0.39",
+]
+
+[tool.uv.sources]
+autolab-core = { workspace = true }
+autolab-telemetry = { workspace = true }
+
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/autolab"]

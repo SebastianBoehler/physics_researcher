@@ -1,0 +1,113 @@
+[project]
+name = "autolab-workspace"
+version = "0.1.0"
+description = "Autonomous materials discovery monorepo workspace."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "alembic>=1.15.1",
+  "coverage>=7.8.0",
+  "httpx>=0.28.1",
+  "mypy>=1.15.0",
+  "pre-commit>=4.2.0",
+  "pytest>=8.3.5",
+  "pytest-asyncio>=0.26.0",
+  "pytest-cov>=6.0.0",
+  "pytest-mock>=3.14.0",
+  "respx>=0.22.0",
+  "ruff>=0.11.0",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.uv.workspace]
+members = [
+  "apps/api",
+  "apps/worker",
+  "packages/agents",
+  "packages/campaigns",
+  "packages/cli",
+  "packages/core",
+  "packages/evaluation",
+  "packages/optimizers",
+  "packages/simulators",
+  "packages/skills",
+  "packages/storage",
+  "packages/telemetry",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+  "E",
+  "F",
+  "I",
+  "B",
+  "UP",
+  "N",
+  "ASYNC",
+  "C4",
+  "DTZ",
+  "G",
+  "PERF",
+  "PIE",
+  "PTH",
+  "RET",
+  "RUF",
+  "SIM",
+]
+ignore = ["B008"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+namespace_packages = true
+explicit_package_bases = true
+plugins = ["pydantic.mypy"]
+mypy_path = [
+  "packages/core/src",
+  "packages/campaigns/src",
+  "packages/storage/src",
+  "packages/simulators/src",
+  "packages/optimizers/src",
+  "packages/skills/src",
+  "packages/agents/src",
+  "packages/telemetry/src",
+  "packages/evaluation/src",
+  "packages/cli/src",
+  "apps/api/src",
+  "apps/worker/src",
+]
+
+[[tool.mypy.overrides]]
+module = [
+  "google.adk.*",
+  "mlflow.*",
+  "ray.*",
+  "redis.*",
+  "sklearn.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra --strict-markers --strict-config"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"

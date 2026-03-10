@@ -1,0 +1,117 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: autolab
+      POSTGRES_USER: autolab
+      POSTGRES_PASSWORD: autolab
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./infra/compose/data/postgres:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U autolab -d autolab"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.22.1
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db --default-artifact-root /mlruns
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./infra/compose/data/mlflow:/mlruns
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.119.0
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./infra/observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+
+  ray-head:
+    image: rayproject/ray:2.44.1-py312
+    command: >
+      bash -lc "ray start --head --node-ip-address=0.0.0.0 --dashboard-host=0.0.0.0 --port=6379 --dashboard-port=8265 --block"
+    ports:
+      - "8265:8265"
+      - "10001:10001"
+    healthcheck:
+      test: ["CMD-SHELL", "ray status || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile
+    command: uv run uvicorn autolab.api.main:app --host 0.0.0.0 --port 8000
+    env_file:
+      - .env
+    environment:
+      AUTOLAB_DATABASE_URL: postgresql+psycopg://autolab:autolab@postgres:5432/autolab
+      AUTOLAB_REDIS_URL: redis://redis:6379/0
+      AUTOLAB_MLFLOW_TRACKING_URI: http://mlflow:5000
+      AUTOLAB_OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      AUTOLAB_RAY_ADDRESS: ray://ray-head:10001
+      AUTOLAB_API_HOST: 0.0.0.0
+      AUTOLAB_API_PORT: 8000
+      AUTOLAB_ARTIFACT_ROOT: /data/artifacts
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/workspace
+      - ./artifacts:/data/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+      ray-head:
+        condition: service_started
+
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile
+    command: uv run python -m autolab.worker.main
+    env_file:
+      - .env
+    environment:
+      AUTOLAB_DATABASE_URL: postgresql+psycopg://autolab:autolab@postgres:5432/autolab
+      AUTOLAB_REDIS_URL: redis://redis:6379/0
+      AUTOLAB_MLFLOW_TRACKING_URI: http://mlflow:5000
+      AUTOLAB_OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      AUTOLAB_RAY_ADDRESS: ray://ray-head:10001
+      AUTOLAB_ARTIFACT_ROOT: /data/artifacts
+    volumes:
+      - .:/workspace
+      - ./artifacts:/data/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+      ray-head:
+        condition: service_started

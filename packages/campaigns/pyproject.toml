@@ -1,0 +1,33 @@
+[project]
+name = "autolab-campaigns"
+version = "0.1.0"
+description = "Campaign orchestration and services."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "autolab-core",
+  "autolab-evaluation",
+  "autolab-optimizers",
+  "autolab-simulators",
+  "autolab-skills",
+  "autolab-storage",
+  "autolab-telemetry",
+  "mlflow>=2.22.1",
+  "ray[default]>=2.44.1",
+  "redis[hiredis]>=5.2.1",
+]
+
+[tool.uv.sources]
+autolab-core = { workspace = true }
+autolab-evaluation = { workspace = true }
+autolab-optimizers = { workspace = true }
+autolab-simulators = { workspace = true }
+autolab-skills = { workspace = true }
+autolab-storage = { workspace = true }
+autolab-telemetry = { workspace = true }
+
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/autolab"]

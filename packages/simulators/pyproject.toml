@@ -1,0 +1,24 @@
+[project]
+name = "autolab-simulators"
+version = "0.1.0"
+description = "Simulator contracts and adapters."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "autolab-core",
+  "autolab-evaluation",
+  "autolab-telemetry",
+  "numpy>=2.2.4",
+  "tenacity>=9.0.0",
+]
+
+[tool.uv.sources]
+autolab-core = { workspace = true }
+autolab-evaluation = { workspace = true }
+autolab-telemetry = { workspace = true }
+
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/autolab"]

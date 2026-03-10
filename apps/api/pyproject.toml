@@ -1,0 +1,31 @@
+[project]
+name = "autolab-api"
+version = "0.1.0"
+description = "Autolab FastAPI application."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "autolab-campaigns",
+  "autolab-core",
+  "autolab-storage",
+  "autolab-simulators",
+  "autolab-telemetry",
+  "fastapi>=0.115.12",
+  "uvicorn[standard]>=0.34.0",
+]
+
+[tool.uv.sources]
+autolab-campaigns = { workspace = true }
+autolab-core = { workspace = true }
+autolab-simulators = { workspace = true }
+autolab-storage = { workspace = true }
+autolab-telemetry = { workspace = true }
+
+[project.scripts]
+autolab-api = "autolab.api.main:serve"
+
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/autolab"]
