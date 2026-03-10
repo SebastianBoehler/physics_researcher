@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from autolab.core.enums import ConstraintOperator
 from autolab.core.models import Constraint, ValidationIssue, ValidationReport
 
@@ -17,7 +19,7 @@ def _passes_constraint(constraint: Constraint, metric_value: float) -> bool:
 def validate_constraints(
     constraints: list[Constraint],
     metrics: dict[str, float],
-    run_id: str | None = None,
+    run_id: UUID | str | None = None,
 ) -> ValidationReport:
     issues: list[ValidationIssue] = []
     for constraint in constraints:

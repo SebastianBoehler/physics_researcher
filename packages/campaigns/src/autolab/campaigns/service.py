@@ -12,9 +12,11 @@ from autolab.core.models import (
     Candidate,
     OptimizerState,
     SimulationRun,
+    ValidationReport,
 )
 from autolab.core.settings import Settings
 from autolab.core.utils import sha256_digest, stable_json_dumps
+from autolab.evaluation import validate_constraints
 from autolab.optimizers import BayesianOptimizer
 from autolab.skills import SkillContext, get_builtin_skills
 from autolab.storage import (
@@ -170,13 +172,13 @@ class CampaignService:
             )
 
             if len(completed_runs) >= campaign.budget.max_runs:
-                campaigns.update_status(campaign_id, CampaignStatus.COMPLETED)
+                final_campaign = campaigns.update_status(campaign_id, CampaignStatus.COMPLETED)
             else:
-                campaigns.update_status(campaign_id, CampaignStatus.RUNNING)
+                final_campaign = campaigns.update_status(campaign_id, CampaignStatus.RUNNING)
 
             return {
                 "campaign_id": str(campaign_id),
-                "status": campaign.status.value,
+                "status": final_campaign.status.value,
                 "run_ids": [str(run.id) for run in executed_runs],
             }
 
@@ -206,16 +208,38 @@ class CampaignService:
         handle = simulator.run(prepared)
         simulator.poll(handle)
         result = simulator.parse(handle)
-        validation = simulator.validate(result)
+        simulator_validation = simulator.validate(result)
+        simulator_report = simulator_validation.report.model_copy(update={"run_id": run.id})
+        constraint_validation = validate_constraints(
+            campaign.constraints,
+            result.metrics,
+            run_id=run.id,
+        )
+        validation = ValidationReport(
+            run_id=run.id,
+            valid=simulator_report.valid and constraint_validation.valid,
+            issues=[
+                *simulator_report.issues,
+                *constraint_validation.issues,
+            ],
+            derived_metrics={
+                **simulator_report.derived_metrics,
+                **constraint_validation.derived_metrics,
+            },
+        )
         run.status = result.status
         run.failure_class = result.failure_class
+        if result.status == RunStatus.SUCCEEDED and not validation.valid:
+            run.failure_class = FailureClass.VALIDATION
         run.job_id = handle.id
         run.attempt += 1
         run.metrics = result.metrics
         run.metadata = {
             **run.metadata,
             "prepared_input": prepared.simulation_input.payload,
-            "validation": validation.report.model_dump(mode="json"),
+            "validation": validation.model_dump(mode="json"),
+            "simulator_validation": simulator_report.model_dump(mode="json"),
+            "constraint_validation": constraint_validation.model_dump(mode="json"),
         }
         runs.update_run(run)
         if result.artifact_paths:
@@ -238,7 +262,7 @@ class CampaignService:
                 rationale=result.summary,
                 structured_output={
                     "metrics": result.metrics,
-                    "validation_passed": validation.report.valid,
+                    "validation_passed": validation.valid,
                     "job_id": handle.id,
                 },
             )

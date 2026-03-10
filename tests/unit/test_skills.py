@@ -1,4 +1,5 @@
-from autolab.core.models import Candidate
+from autolab.core.enums import ConstraintOperator
+from autolab.core.models import Candidate, Constraint
 from autolab.skills import get_builtin_skills
 
 
@@ -26,3 +27,25 @@ def test_rank_candidates_skill_orders_by_prediction() -> None:
     ]
     result = skill.run(skill.input_model(candidates=candidates), context=None)  # type: ignore[arg-type]
     assert len(result.ordered_candidate_ids) == 2
+
+
+def test_validate_constraints_skill_reports_actual_violations() -> None:
+    registry = get_builtin_skills()
+    skill = registry.get("validate_constraints")
+    result = skill.run(
+        skill.input_model(
+            constraints=[
+                Constraint(
+                    name="cost_limit",
+                    metric_key="cost",
+                    operator=ConstraintOperator.LESS_THAN,
+                    threshold=55.0,
+                )
+            ],
+            metrics={"cost": 60.0},
+        ),
+        context=None,  # type: ignore[arg-type]
+    )
+
+    assert result.valid is False
+    assert result.issues

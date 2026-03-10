@@ -5,6 +5,7 @@ from typing import Any
 from uuid import UUID
 
 from autolab.core.models import Candidate, Constraint, SimulationRun
+from autolab.evaluation import validate_constraints
 from autolab.skills.registry import SkillContext, SkillRegistry, SkillSpec
 from pydantic import BaseModel, Field
 
@@ -125,12 +126,11 @@ def _parse_result(
 def _validate_constraints(
     payload: ValidateConstraintsInput, _: SkillContext
 ) -> ValidateConstraintsOutput:
-    issues = []
-    for constraint in payload.constraints:
-        metric = payload.metrics.get(constraint.metric_key)
-        if metric is None:
-            issues.append(f"missing:{constraint.metric_key}")
-    return ValidateConstraintsOutput(valid=not issues, issues=issues)
+    report = validate_constraints(payload.constraints, payload.metrics)
+    return ValidateConstraintsOutput(
+        valid=report.valid,
+        issues=[issue.message for issue in report.issues],
+    )
 
 
 def _summarize_campaign_state(
