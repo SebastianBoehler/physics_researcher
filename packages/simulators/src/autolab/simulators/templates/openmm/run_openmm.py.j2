@@ -1,0 +1,135 @@
+import json
+import math
+
+import openmm
+from openmm import unit
+
+system_kind = "{{ system_kind }}"
+platform = openmm.Platform.getPlatformByName("{{ platform_name }}")
+system = openmm.System()
+atom_count = {{ atom_count }}
+for _ in range(atom_count):
+    system.addParticle(39.948 * unit.amu)
+
+reference_distance_nm = None
+reference_energy = 0.0
+
+if system_kind == "lj_pair":
+    force = openmm.NonbondedForce()
+    force.setNonbondedMethod(openmm.NonbondedForce.NoCutoff)
+    sigma = {{ sigma }}
+    epsilon = {{ epsilon }}
+    force.addParticle(0.0, sigma * unit.nanometer, epsilon * unit.kilojoule_per_mole)
+    force.addParticle(0.0, sigma * unit.nanometer, epsilon * unit.kilojoule_per_mole)
+    system.addForce(force)
+    reference_distance_nm = sigma * (2.0 ** (1.0 / 6.0))
+    reference_energy = -epsilon
+    initial_positions = [
+        openmm.Vec3(0.0, 0.0, 0.0),
+        openmm.Vec3({{ initial_distance }}, 0.0, 0.0),
+    ]
+elif system_kind == "lj_cluster":
+    force = openmm.NonbondedForce()
+    force.setNonbondedMethod(openmm.NonbondedForce.NoCutoff)
+    sigma = {{ sigma }}
+    epsilon = {{ epsilon }}
+    for _ in range(atom_count):
+        force.addParticle(0.0, sigma * unit.nanometer, epsilon * unit.kilojoule_per_mole)
+    system.addForce(force)
+    reference_energy = {{ reference_cluster_energy }}
+    initial_positions = [
+        openmm.Vec3(*coordinates) for coordinates in {{ cluster_positions }}
+    ]
+else:
+    force = openmm.HarmonicBondForce()
+    force.addBond(
+        0,
+        1,
+        {{ equilibrium_distance }} * unit.nanometer,
+        {{ spring_constant }} * unit.kilojoule_per_mole / unit.nanometer**2,
+    )
+    system.addForce(force)
+    initial_positions = [
+        openmm.Vec3(0.0, 0.0, 0.0),
+        openmm.Vec3({{ initial_distance }}, 0.0, 0.0),
+    ]
+
+integrator = openmm.LangevinIntegrator(
+    {{ temperature }} * unit.kelvin,
+    {{ friction }} / unit.picosecond,
+    {{ step_size_fs }} * unit.femtoseconds,
+)
+context = openmm.Context(system, integrator, platform)
+context.setPositions(initial_positions)
+pre_minimization_energy = context.getState(getEnergy=True).getPotentialEnergy().value_in_unit(
+    unit.kilojoule_per_mole
+)
+if {{ minimize_energy }}:
+    openmm.LocalEnergyMinimizer.minimize(
+        context,
+        tolerance={{ minimization_tolerance }},
+        maxIterations={{ minimization_max_iterations }},
+    )
+integrator.step({{ steps }})
+state = context.getState(getEnergy=True, getPositions=True)
+positions = state.getPositions(asNumpy=True)
+position_components_nm = positions.value_in_unit(unit.nanometer)
+final_distance_nm = None
+distance_gap_to_reference = None
+cluster_radius_nm = None
+min_pair_distance_nm = None
+
+if atom_count >= 2:
+    final_distance = positions[1] - positions[0]
+    final_distance_components_nm = final_distance.value_in_unit(unit.nanometer)
+    final_distance_nm = math.sqrt(
+        (final_distance_components_nm[0] ** 2)
+        + (final_distance_components_nm[1] ** 2)
+        + (final_distance_components_nm[2] ** 2)
+    )
+
+if reference_distance_nm is not None and final_distance_nm is not None:
+    distance_gap_to_reference = abs(final_distance_nm - reference_distance_nm)
+
+if system_kind == "lj_cluster":
+    squared_radii = [
+        (components[0] ** 2) + (components[1] ** 2) + (components[2] ** 2)
+        for components in position_components_nm
+    ]
+    cluster_radius_nm = math.sqrt(max(squared_radii)) if squared_radii else 0.0
+    pair_distances = []
+    for left in range(atom_count):
+        for right in range(left + 1, atom_count):
+            dx = position_components_nm[left][0] - position_components_nm[right][0]
+            dy = position_components_nm[left][1] - position_components_nm[right][1]
+            dz = position_components_nm[left][2] - position_components_nm[right][2]
+            pair_distances.append(math.sqrt((dx ** 2) + (dy ** 2) + (dz ** 2)))
+    min_pair_distance_nm = min(pair_distances) if pair_distances else None
+
+payload = {
+    "potential_energy": state.getPotentialEnergy().value_in_unit(unit.kilojoule_per_mole),
+    "kinetic_energy": state.getKineticEnergy().value_in_unit(unit.kilojoule_per_mole),
+    "temperature": {{ temperature }},
+    "system_kind": system_kind,
+    "atom_count": atom_count,
+    "platform_name": platform.getName(),
+    "reference_energy": reference_energy,
+    "pre_minimization_energy": pre_minimization_energy,
+    "energy_gap_to_reference": abs(
+        state.getPotentialEnergy().value_in_unit(unit.kilojoule_per_mole) - reference_energy
+    ),
+}
+
+if final_distance_nm is not None:
+    payload["final_distance_nm"] = final_distance_nm
+if reference_distance_nm is not None:
+    payload["reference_distance_nm"] = reference_distance_nm
+if distance_gap_to_reference is not None:
+    payload["distance_gap_to_reference"] = distance_gap_to_reference
+if cluster_radius_nm is not None:
+    payload["cluster_radius_nm"] = cluster_radius_nm
+if min_pair_distance_nm is not None:
+    payload["min_pair_distance_nm"] = min_pair_distance_nm
+
+with open("openmm_results.json", "w", encoding="utf-8") as handle:
+    json.dump(payload, handle, indent=2)

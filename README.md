@@ -1,12 +1,11 @@
 # physics_researcher
 
-`physics_researcher` is a production-minded Python monorepo for an autonomous digital materials lab. It combines typed orchestration services, agent tooling, simulation adapters, experiment tracking, and local infrastructure so closed-loop materials or process optimization workflows can be developed, tested, and run from one repository.
+`physics_researcher` is a production-minded Python monorepo for an autonomous digital materials lab. It combines typed orchestration services, agent tooling, real simulator adapters, experiment tracking, and local infrastructure so closed-loop materials or process optimization workflows can be developed, tested, and run from one repository.
 
 ## Status
 
 - Working local development scaffold
-- Fake simulator-backed campaign loop implemented and tested
-- Real simulator adapters for LAMMPS and OpenMM scaffolded behind a stable interface
+- Real workflow-backed adapters for LAMMPS and MEEP, with Quantum ESPRESSO, OpenMM, Elmer, and DEVSIM scaffolded on the same contract
 - FastAPI API, Typer CLI, Redis/Ray worker path, PostgreSQL storage, MLflow hooks, and OpenTelemetry wiring in place
 
 ## Architecture at a glance
@@ -15,10 +14,11 @@
 - `apps/worker`: Redis Streams consumer that dispatches campaign steps via Ray
 - `packages/core`: Pydantic v2 models, enums, settings, and utility helpers
 - `packages/campaigns`: orchestration services, queueing, and MLflow logging
-- `packages/simulators`: simulator contract, fake backend, and LAMMPS/OpenMM scaffolds
+- `packages/simulators`: simulator contract, workflow-backed adapters, templates, parsers, and execution infrastructure
+- `skills`: thin simulator-specific Codex skills for LAMMPS, MEEP, Quantum ESPRESSO, OpenMM, Elmer, and DEVSIM
 - `packages/optimizers`: Bayesian optimization and batch-selection logic
 - `packages/skills`: typed reusable skills that can be exposed as ADK tools
-- `packages/agents`: planner, execution, analysis, critic, and workflow agent scaffolds
+- `packages/agents`: planner, execution, analysis, critic, workflow agent scaffolds, and arXiv literature research orchestration
 - `packages/storage`: SQLAlchemy models, repositories, artifact store, and Alembic setup
 - `packages/telemetry`: structured logging and tracing helpers
 - `examples`: seeded demo campaign, config samples, and notebook scaffold
@@ -26,6 +26,8 @@
 - `docs`: ADRs, architecture notes, and operator playbooks
 
 More detail is in [docs/architecture/overview.md](docs/architecture/overview.md) and [docs/adr/0001-orchestration-and-simulator-boundary.md](docs/adr/0001-orchestration-and-simulator-boundary.md).
+The stage-based workflow extension is summarized in [docs/architecture/simulator-workflows.md](docs/architecture/simulator-workflows.md).
+The literature analysis path is summarized in [docs/architecture/literature-research.md](docs/architecture/literature-research.md).
 
 ## Core capabilities
 
@@ -35,7 +37,32 @@ More detail is in [docs/architecture/overview.md](docs/architecture/overview.md)
 - Persist campaign metadata, runs, metrics, decisions, summaries, and artifacts
 - Track runs in MLflow
 - Expose deterministic skills and ADK-compatible agent tools
-- Validate the full loop locally with a deterministic fake simulator
+- Execute typed single-stage or multi-stage simulator workflows with per-stage manifests, logs, and parse summaries
+- Preserve stage-level provenance and cross-simulator transfer metadata
+- Validate the full loop and artifact/provenance model through real-adapter execution paths
+
+## Agentic Research Loop
+
+The intended operating mode is closer to an autoresearcher than a single script:
+
+1. An agent proposes a candidate, experiment, or workflow choice.
+2. Typed skills convert that intent into a campaign or stage spec.
+3. Simulator adapters write controlled artifacts and launch real engines.
+4. Parsers and validators turn raw outputs into reusable metrics and provenance.
+5. The agent critiques results, updates the next hypothesis, and steps again.
+
+From the CLI, that loop looks like:
+
+```bash
+uv run autolab create-campaign examples/campaigns/qe_to_meep_photonic_screen.json
+uv run autolab start-campaign <campaign-id>
+uv run autolab step-campaign <campaign-id> --execute-inline
+uv run autolab list-runs <campaign-id>
+uv run autolab inspect-run <run-id>
+uv run autolab research-literature "Quantum sensor stability" --paper 2401.12345 --paper https://arxiv.org/abs/2402.54321
+```
+
+The key boundary is that the agent decides what to try, while adapters own how files, commands, logs, parsing, and validation are handled.
 
 ## Quickstart
 
@@ -84,11 +111,120 @@ npm run format:check
 
 Start with the prompt and spec library in [examples/prompts/experiment_prompts.md](examples/prompts/experiment_prompts.md).
 
+Research and optimization problems that fit the current architecture well:
+
+- Electronic-structure to photonics transfer, where Quantum ESPRESSO informs a downstream MEEP device screen
+- Electronic-structure to atomistic bootstrapping, where Quantum ESPRESSO informs a downstream LAMMPS study
+- Atomistic to continuum multiscale screening, where LAMMPS feeds effective parameters into Elmer
+- Electro-optic device co-design, where DEVSIM outputs inform a downstream MEEP stage
+- Molecular relaxation and binder-state triage, where OpenMM is used as a fast structural filter before heavier downstream work
+- Standalone photonic inverse screening, where MEEP sweeps geometry and refractive-index choices directly
+- Standalone process-window studies in LAMMPS, where thermostat, timestep, and structure choices are iterated under strict artifact capture
+
+Good examples of what this stack is not ready for yet:
+
+- full protein discovery with docking, folding, and wet-lab planning
+- aerodynamic drag optimization without a CFD adapter
+- arbitrary cross-simulator mappings that are not registered in the workflow layer
+
 The most useful first runs are:
 
-- [baseline_conductivity.json](examples/campaigns/baseline_conductivity.json)
-- [cautious_feasible_search.json](examples/campaigns/cautious_feasible_search.json)
-- [process_window_tuning.json](examples/campaigns/process_window_tuning.json)
+- [demo_campaign.json](examples/campaigns/demo_campaign.json)
+- [openmm_protein_relaxation.json](examples/campaigns/openmm_protein_relaxation.json)
+- [meep_waveguide_inverse_screen.json](examples/campaigns/meep_waveguide_inverse_screen.json)
+- [qe_to_meep_photonic_screen.json](examples/campaigns/qe_to_meep_photonic_screen.json)
+- [qe_to_lammps_forcefield_bootstrap.json](examples/campaigns/qe_to_lammps_forcefield_bootstrap.json)
+- [lammps_to_elmer_multiscale_screen.json](examples/campaigns/lammps_to_elmer_multiscale_screen.json)
+- [devsim_to_meep_device_coupling.json](examples/campaigns/devsim_to_meep_device_coupling.json)
+- [cross_simulator_transfer_verification.json](examples/campaigns/cross_simulator_transfer_verification.json)
+
+Suggested progression:
+
+1. Start with `demo_campaign.json` to inspect the single-stage LAMMPS artifact lifecycle.
+2. Run `openmm_protein_relaxation.json` for a simple agent-driven molecular optimization loop.
+3. Run `meep_waveguide_inverse_screen.json` for standalone photonics screening.
+4. Move to `qe_to_meep_photonic_screen.json` or `qe_to_lammps_forcefield_bootstrap.json` for cross-simulator handoff.
+5. Use `lammps_to_elmer_multiscale_screen.json` or `devsim_to_meep_device_coupling.json` when you want an explicitly interdisciplinary workflow.
+6. Use `cross_simulator_transfer_verification.json` when the question is “did we map and record this correctly?” rather than “did we optimize it?”
+
+## Paper-Ready Benchmark
+
+The most practical first benchmark for a paper is the MEEP inverse-design suite:
+
+- benchmark manifest: [benchmark.json](benchmarks/meep_inverse_design/benchmark.json)
+- benchmark note: [meep_inverse_design.md](docs/benchmarks/meep_inverse_design.md)
+
+Run it with:
+
+```bash
+uv run autolab run-benchmark --manifest-path benchmarks/meep_inverse_design/benchmark.json --execute-inline
+```
+
+This creates campaigns, steps them through the existing API, and writes a report to `artifacts/benchmarks/meep-inverse-design-v1/report.json`.
+
+For a benchmark you can run more easily on a standard Python host, use the OpenMM Lennard-Jones pair suite:
+
+- benchmark manifest: [benchmark.json](benchmarks/openmm_lj_pair/benchmark.json)
+- refined multi-seed manifest: [benchmark.json](benchmarks/openmm_lj_pair_refined_multiseed/benchmark.json)
+- benchmark note: [openmm_lj_pair.md](docs/benchmarks/openmm_lj_pair.md)
+- harder many-body benchmark: [benchmark.json](benchmarks/openmm_lj13_cluster/benchmark.json)
+- refined many-body benchmark: [benchmark.json](benchmarks/openmm_lj13_cluster_refined/benchmark.json)
+- many-body benchmark note: [openmm_lj_cluster.md](docs/benchmarks/openmm_lj_cluster.md)
+- standalone campaign example: [openmm_lj_pair_equilibrium.json](examples/campaigns/openmm_lj_pair_equilibrium.json)
+
+Run it with:
+
+```bash
+AUTOLAB_ENABLE_OPENMM=true uv run autolab run-benchmark --manifest-path benchmarks/openmm_lj_pair/benchmark.json --execute-inline
+```
+
+This benchmark compares the observed best run against the known Lennard-Jones optimum and records the gap in `artifacts/benchmarks/openmm-lj-pair-v1/report.json`.
+
+The refined local-search benchmark is the more meaningful stress test for optimizer reliability:
+
+```bash
+AUTOLAB_ENABLE_OPENMM=true uv run autolab run-benchmark --manifest-path benchmarks/openmm_lj_pair_refined_multiseed/benchmark.json --execute-inline
+```
+
+In the current local result, all 6 seeds completed 128/128 runs, the best observed gap was `2.0980834958272965e-08`, the median best gap across seeds was `1.6999244689674953e-07`, and the worst seed still finished at `1.3918876647922573e-06`. That is strong evidence that the loop can repeatedly recover the known Lennard-Jones equilibrium on this simple analytic benchmark.
+
+This should not be described as "past the known optimum" or as broad materials-science SOTA. Here, "near machine precision" means the numerical error against this benchmark's analytic reference is extremely small, not that arbitrary manufactured objects can be simulated to fabrication-level accuracy.
+
+If you want a research-interesting next benchmark, the repository now also includes an OpenMM `LJ13` cluster problem. That benchmark removes rigid-body redundancy, optimizes `3N-6` coordinates directly, and measures the gap to the accepted many-body cluster minimum. Unlike the pair benchmark, failure there is often an optimizer-quality signal rather than just numerical noise.
+
+The raw global-search `LJ13` benchmark is intentionally hard:
+
+```bash
+AUTOLAB_ENABLE_OPENMM=true uv run autolab run-benchmark --manifest-path benchmarks/openmm_lj13_cluster/benchmark.json --execute-inline
+```
+
+In the current full local run, all 96/96 runs succeeded, but the best observed gap was still `330.6164420835543`. That makes it a useful stress test for many-body global search, but not yet a strong result for minimum recovery with the current optimizer.
+
+For a fairer local-reliability benchmark, use the refined `LJ13` variant with compact icosahedral perturbations and deterministic local minimization:
+
+```bash
+AUTOLAB_ENABLE_OPENMM=true uv run autolab run-benchmark --manifest-path benchmarks/openmm_lj13_cluster_refined/benchmark.json --execute-inline
+```
+
+In the current refined local run, all 128/128 runs succeeded, the best observed gap was `1.1845116887343465e-07`, and the mean gap across runs was `2.261867184216726e-06`. That is strong evidence that the OpenMM path can repeatedly recover the accepted `LJ13` minimum once the benchmark evaluates relaxed basin quality instead of raw random coordinates.
+
+## Parallel Execution
+
+Independent candidate branches can be executed in parallel inside a single campaign step while preserving stage ordering within each workflow run.
+
+Useful controls:
+
+- `AUTOLAB_MAX_PARALLEL_RUNS`
+- `AUTOLAB_MAX_PARALLEL_BENCHMARK_CAMPAIGNS`
+
+Example:
+
+```bash
+AUTOLAB_ENABLE_OPENMM=true \
+AUTOLAB_MAX_PARALLEL_RUNS=4 \
+AUTOLAB_MAX_PARALLEL_BENCHMARK_CAMPAIGNS=2 \
+uv run autolab run-benchmark --manifest-path benchmarks/openmm_lj_pair/benchmark.json --execute-inline
+```
 
 ## Local stack
 
@@ -102,11 +238,18 @@ The default Docker Compose stack includes:
 - API service
 - Worker service
 
-Real simulator engines are intentionally not included in the default stack. The fake backend is the default for local development and CI.
+Real simulator engines are intentionally not included in the default stack.
+When simulator binaries or Python modules are missing, the adapters fail with structured execution records, logs, and manifests rather than silent command errors.
+For a simulator-enabled local worker, use the optional LAMMPS profile:
+
+```bash
+docker compose --profile lammps build worker-lammps
+make test-lammps
+```
 
 ## Testing strategy
 
-- Unit tests for models, skills, and fake simulator behavior
+- Unit tests for models, skills, stage mappings, and parser behavior
 - Integration tests for API lifecycle and simulator adapter contracts
 - End-to-end test for the closed-loop demo campaign
 - Strict linting and mypy enforcement in CI
@@ -124,6 +267,7 @@ The current repository is intentionally strong on boundaries and local operabili
 
 - richer optimizer implementations
 - production MLflow backend configuration
-- real LAMMPS/OpenMM execution environments
+- deeper OpenMM, Quantum ESPRESSO, and Elmer execution environments
 - dashboard UI beyond the current placeholder
 - stronger auth and multi-user controls
+- CFD-backed drag optimization workflows once a suitable open-source CFD adapter is added

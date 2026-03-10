@@ -1,0 +1,16 @@
+{
+  "name": "openmm-lj13-cluster-refined-v1",
+  "description": "A refined OpenMM Lennard-Jones LJ13 benchmark that starts near the canonical icosahedral packing and applies deterministic local energy minimization before scoring the gap to the accepted minimum.",
+  "paper_hypothesis": "With compact icosahedral initialization and local minimization, the Autolab loop should repeatedly recover the LJ13 minimum to near floating-point precision, isolating optimizer reliability from obviously non-physical starting geometries.",
+  "primary_metric": "energy_gap_to_reference",
+  "campaigns": [
+    "campaigns/openmm_lj13_cluster_seed_31.json"
+  ],
+  "evaluation": {
+    "reference_best_metric": 0.0,
+    "reference_direction": "minimize",
+    "reference_atom_count": 13,
+    "reference_energy_kj_per_mol": -44.3268014185,
+    "reference_note": "Accepted reduced-unit LJ13 global minimum energy, approached here from compact icosahedral perturbations with local minimization enabled."
+  }
+}

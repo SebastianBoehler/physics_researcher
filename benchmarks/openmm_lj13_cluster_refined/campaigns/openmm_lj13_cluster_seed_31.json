@@ -1,0 +1,79 @@
+{
+  "name": "openmm-lj13-cluster-refined-seed-31",
+  "description": "Refined local-search OpenMM LJ13 benchmark around the canonical icosahedral motif with deterministic local minimization.",
+  "mode": "process_optimization",
+  "objectives": [
+    {
+      "name": "minimize_energy_gap_to_reference",
+      "metric_key": "energy_gap_to_reference",
+      "direction": "minimize",
+      "weight": 1.0
+    }
+  ],
+  "constraints": [],
+  "search_space": {
+    "dimensions": [
+      { "name": "system_kind", "kind": "categorical", "choices": ["lj_cluster"] },
+      { "name": "platform_name", "kind": "categorical", "choices": ["CPU"] },
+      { "name": "atom_count", "kind": "categorical", "choices": ["13"] },
+      { "name": "sigma", "kind": "categorical", "choices": ["1.0"] },
+      { "name": "epsilon", "kind": "categorical", "choices": ["1.0"] },
+      { "name": "temperature", "kind": "categorical", "choices": ["1.0"] },
+      { "name": "steps", "kind": "categorical", "choices": ["0"] },
+      { "name": "friction", "kind": "categorical", "choices": ["1.0"] },
+      { "name": "step_size_fs", "kind": "categorical", "choices": ["1.0"] },
+      { "name": "reference_cluster_energy", "kind": "categorical", "choices": ["-44.3268014185"] },
+      { "name": "minimize_energy", "kind": "categorical", "choices": ["true"] },
+      { "name": "minimization_tolerance", "kind": "categorical", "choices": ["1e-6"] },
+      { "name": "minimization_max_iterations", "kind": "categorical", "choices": ["10000"] },
+      { "name": "atom_1_x", "kind": "categorical", "choices": ["1.067525"] },
+      { "name": "atom_2_x", "kind": "categorical", "choices": ["0.477412"] },
+      { "name": "atom_2_y", "kind": "categorical", "choices": ["0.954823"] },
+      { "name": "atom_3_x", "kind": "continuous", "lower": -0.577412, "upper": -0.377412, "choices": [] },
+      { "name": "atom_3_y", "kind": "continuous", "lower": -0.395057, "upper": -0.195057, "choices": [] },
+      { "name": "atom_3_z", "kind": "continuous", "lower": -1.008091, "upper": -0.808091, "choices": [] },
+      { "name": "atom_4_x", "kind": "continuous", "lower": 0.377412, "upper": 0.577412, "choices": [] },
+      { "name": "atom_4_y", "kind": "continuous", "lower": 0.195057, "upper": 0.395057, "choices": [] },
+      { "name": "atom_4_z", "kind": "continuous", "lower": -1.008091, "upper": -0.808091, "choices": [] },
+      { "name": "atom_5_x", "kind": "continuous", "lower": 0.377412, "upper": 0.577412, "choices": [] },
+      { "name": "atom_5_y", "kind": "continuous", "lower": -0.872468, "upper": -0.672468, "choices": [] },
+      { "name": "atom_5_z", "kind": "continuous", "lower": -0.661231, "upper": -0.461231, "choices": [] },
+      { "name": "atom_6_x", "kind": "continuous", "lower": -0.577412, "upper": -0.377412, "choices": [] },
+      { "name": "atom_6_y", "kind": "continuous", "lower": 0.672468, "upper": 0.872468, "choices": [] },
+      { "name": "atom_6_z", "kind": "continuous", "lower": -0.661231, "upper": -0.461231, "choices": [] },
+      { "name": "atom_7_x", "kind": "continuous", "lower": -0.577412, "upper": -0.377412, "choices": [] },
+      { "name": "atom_7_y", "kind": "continuous", "lower": -1.054823, "upper": -0.854823, "choices": [] },
+      { "name": "atom_7_z", "kind": "continuous", "lower": -0.100000, "upper": 0.100000, "choices": [] },
+      { "name": "atom_8_x", "kind": "continuous", "lower": -1.167525, "upper": -0.967525, "choices": [] },
+      { "name": "atom_8_y", "kind": "continuous", "lower": -0.100000, "upper": 0.100000, "choices": [] },
+      { "name": "atom_8_z", "kind": "continuous", "lower": -0.100000, "upper": 0.100000, "choices": [] },
+      { "name": "atom_9_x", "kind": "continuous", "lower": 0.377412, "upper": 0.577412, "choices": [] },
+      { "name": "atom_9_y", "kind": "continuous", "lower": -0.872468, "upper": -0.672468, "choices": [] },
+      { "name": "atom_9_z", "kind": "continuous", "lower": 0.461231, "upper": 0.661231, "choices": [] },
+      { "name": "atom_10_x", "kind": "continuous", "lower": -0.577412, "upper": -0.377412, "choices": [] },
+      { "name": "atom_10_y", "kind": "continuous", "lower": 0.672468, "upper": 0.872468, "choices": [] },
+      { "name": "atom_10_z", "kind": "continuous", "lower": 0.461231, "upper": 0.661231, "choices": [] },
+      { "name": "atom_11_x", "kind": "continuous", "lower": -0.577412, "upper": -0.377412, "choices": [] },
+      { "name": "atom_11_y", "kind": "continuous", "lower": -0.395057, "upper": -0.195057, "choices": [] },
+      { "name": "atom_11_z", "kind": "continuous", "lower": 0.808091, "upper": 1.008091, "choices": [] },
+      { "name": "atom_12_x", "kind": "continuous", "lower": 0.377412, "upper": 0.577412, "choices": [] },
+      { "name": "atom_12_y", "kind": "continuous", "lower": 0.195057, "upper": 0.395057, "choices": [] },
+      { "name": "atom_12_z", "kind": "continuous", "lower": 0.808091, "upper": 1.008091, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 128,
+    "batch_size": 1,
+    "max_failures": 4
+  },
+  "simulator": "openmm",
+  "seed": 31,
+  "tags": ["openmm", "benchmark", "lennard-jones", "cluster", "lj13", "refined", "local-minimization", "real-simulator"],
+  "metadata": {
+    "operator_prompt": "Use this refined OpenMM LJ13 benchmark to perturb a compact icosahedral cluster, run local minimization, and drive the remaining energy gap to the accepted minimum toward floating-point noise.",
+    "benchmark_family": "openmm_lj13_cluster_refined",
+    "reference_atom_count": 13,
+    "reference_energy_kj_per_mol": -44.3268014185,
+    "search_space_note": "This benchmark fixes the rigid-body frame and perturbs only the compact icosahedral coordinates before local minimization."
+  }
+}
