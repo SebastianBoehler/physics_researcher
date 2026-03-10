@@ -1,0 +1,45 @@
+{
+  "name": "openmm-lj-pair-longrun-seed-59",
+  "description": "Long-run OpenMM Lennard-Jones pair benchmark with seed 59.",
+  "mode": "process_optimization",
+  "objectives": [
+    {
+      "name": "minimize_energy_gap_to_reference",
+      "metric_key": "energy_gap_to_reference",
+      "direction": "minimize",
+      "weight": 1.0
+    },
+    {
+      "name": "minimize_distance_gap_to_reference",
+      "metric_key": "distance_gap_to_reference",
+      "direction": "minimize",
+      "weight": 0.25
+    }
+  ],
+  "constraints": [],
+  "search_space": {
+    "dimensions": [
+      { "name": "system_kind", "kind": "categorical", "choices": ["lj_pair"] },
+      { "name": "platform_name", "kind": "categorical", "choices": ["CPU"] },
+      { "name": "initial_distance", "kind": "continuous", "lower": 0.25, "upper": 0.8, "choices": [] },
+      { "name": "temperature", "kind": "continuous", "lower": 1.0, "upper": 1.1, "choices": [] },
+      { "name": "steps", "kind": "integer", "lower": 0, "upper": 1, "choices": [] },
+      { "name": "friction", "kind": "continuous", "lower": 1.0, "upper": 1.1, "choices": [] },
+      { "name": "step_size_fs", "kind": "continuous", "lower": 1.0, "upper": 1.1, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 64,
+    "batch_size": 1,
+    "max_failures": 2
+  },
+  "simulator": "openmm",
+  "seed": 59,
+  "tags": ["openmm", "benchmark", "lennard-jones", "equilibrium", "real-simulator", "longrun", "seed-59"],
+  "metadata": {
+    "operator_prompt": "Use the OpenMM Lennard-Jones pair benchmark to recover the known equilibrium separation and minimize the gap to the theoretical energy minimum over a larger run budget while preserving generated artifacts and parsed summaries.",
+    "benchmark_family": "openmm_lj_pair_longrun",
+    "reference_distance_nm": 0.38163709642518684,
+    "reference_energy_kj_per_mol": -0.997
+  }
+}

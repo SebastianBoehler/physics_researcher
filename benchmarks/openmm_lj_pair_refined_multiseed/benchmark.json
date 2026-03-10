@@ -1,0 +1,21 @@
+{
+  "name": "openmm-lj-pair-refined-multiseed-v1",
+  "description": "A refined multi-seed OpenMM benchmark that performs a longer local search near the Lennard-Jones equilibrium to measure convergence reliability under a larger budget.",
+  "paper_hypothesis": "With a tighter local search space around the known Lennard-Jones equilibrium and a larger evaluation budget, the agentic Autolab loop should repeatedly converge to near-reference energy gaps across multiple random seeds.",
+  "primary_metric": "energy_gap_to_reference",
+  "campaigns": [
+    "campaigns/openmm_lj_pair_seed_31.json",
+    "campaigns/openmm_lj_pair_seed_43.json",
+    "campaigns/openmm_lj_pair_seed_59.json",
+    "campaigns/openmm_lj_pair_seed_71.json",
+    "campaigns/openmm_lj_pair_seed_89.json",
+    "campaigns/openmm_lj_pair_seed_131.json"
+  ],
+  "evaluation": {
+    "reference_best_metric": 0.0,
+    "reference_direction": "minimize",
+    "reference_distance_nm": 0.38163709642518684,
+    "reference_energy_kj_per_mol": -0.997,
+    "reference_note": "For a Lennard-Jones pair, the global minimum occurs at r = 2^(1/6) sigma and V(r*) = -epsilon."
+  }
+}

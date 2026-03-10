@@ -1,0 +1,18 @@
+{
+  "name": "openmm-lj-pair-longrun-v1",
+  "description": "A longer multi-seed OpenMM benchmark that tests whether the optimization loop consistently converges close to the known Lennard-Jones equilibrium under a larger run budget.",
+  "paper_hypothesis": "With a longer budget and multiple seeds, the agentic Autolab loop should converge very close to the known Lennard-Jones optimum while preserving reproducible artifacts and low cross-seed variance.",
+  "primary_metric": "energy_gap_to_reference",
+  "campaigns": [
+    "campaigns/openmm_lj_pair_seed_31.json",
+    "campaigns/openmm_lj_pair_seed_43.json",
+    "campaigns/openmm_lj_pair_seed_59.json"
+  ],
+  "evaluation": {
+    "reference_best_metric": 0.0,
+    "reference_direction": "minimize",
+    "reference_distance_nm": 0.38163709642518684,
+    "reference_energy_kj_per_mol": -0.997,
+    "reference_note": "For a Lennard-Jones pair, the global minimum occurs at r = 2^(1/6) sigma and V(r*) = -epsilon."
+  }
+}
