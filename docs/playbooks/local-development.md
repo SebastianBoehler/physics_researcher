@@ -4,6 +4,8 @@
 2. Run `uv sync --all-packages` to install workspace packages.
 3. Start infrastructure with `make up`.
 4. Visit `http://localhost:8000/docs` for OpenAPI.
-5. Use `uv run autolab seed-demo` to create a fake-simulator campaign.
+5. Use `uv run autolab seed-demo` to create a real-adapter demo campaign.
 6. Use `uv run autolab step-campaign <campaign-id> --execute-inline` for a synchronous debug step or omit `--execute-inline` to exercise the worker queue.
 7. Use the prompt and spec catalog in [examples/prompts/experiment_prompts.md](../../examples/prompts/experiment_prompts.md) when you want structured scenarios to run against the stack.
+8. For a LAMMPS-enabled worker image, run `docker compose --profile lammps build worker-lammps`.
+9. Verify real LAMMPS execution inside that image with `make test-lammps`.

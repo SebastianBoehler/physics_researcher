@@ -1,0 +1,27 @@
+{
+  "name": "meep-inverse-design-v1",
+  "description": "Paper-oriented benchmark suite for agentic photonic inverse design with standalone and cross-simulator MEEP workflows.",
+  "paper_hypothesis": "An autoresearcher-style agent can drive reproducible photonic inverse-design campaigns with useful optimization progress while preserving artifact and provenance quality.",
+  "primary_metric": "transmission_peak",
+  "campaigns": [
+    "benchmarks/meep_inverse_design/campaigns/waveguide_lowres_screen.json",
+    "benchmarks/meep_inverse_design/campaigns/waveguide_highres_screen.json",
+    "benchmarks/meep_inverse_design/campaigns/qe_to_meep_transfer_screen.json"
+  ],
+  "evaluation": {
+    "report_fields": [
+      "best_metric",
+      "mean_metric",
+      "succeeded_runs",
+      "failed_runs",
+      "timed_out_runs",
+      "artifact_coverage",
+      "workflow_stage_coverage"
+    ],
+    "baseline_notes": [
+      "Compare against random search using the same campaign budget.",
+      "Compare against the default optimizer without workflow transfer validation.",
+      "Record whether provenance and stage mapping artifacts were present for every run."
+    ]
+  }
+}

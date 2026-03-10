@@ -20,4 +20,4 @@ Autolab is organized as a Python monorepo with clear boundaries between orchestr
 
 ## Simulation backends
 
-`packages/simulators` defines the only stable simulator contract. The fake backend is production-shaped enough for CI and demo workflows. Real engine adapters live behind the same interface, with isolated assets under `integrations/lammps` and `integrations/openmm`.
+`packages/simulators` defines the only stable simulator contract. Real engine adapters live behind the same interface, with stage-based execution, isolated templates, parser modules, and per-stage manifests.

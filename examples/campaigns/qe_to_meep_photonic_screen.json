@@ -1,0 +1,70 @@
+{
+  "name": "qe-to-meep-photonic-screen",
+  "description": "Electronic-structure to photonic-response screening workflow.",
+  "mode": "materials_discovery",
+  "objectives": [
+    {
+      "name": "maximize_transmission_peak",
+      "metric_key": "transmission_peak",
+      "direction": "maximize",
+      "weight": 1.0
+    }
+  ],
+  "constraints": [],
+  "search_space": {
+    "dimensions": [
+      { "name": "ecutwfc", "kind": "continuous", "lower": 20.0, "upper": 80.0, "choices": [] },
+      { "name": "resolution", "kind": "integer", "lower": 12, "upper": 32, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 4,
+    "batch_size": 1,
+    "max_failures": 2
+  },
+  "simulator": "quantum_espresso",
+  "workflow": {
+    "name": "qe-to-meep",
+    "stages": [
+      {
+        "name": "qe",
+        "simulator": "quantum_espresso",
+        "task": {
+          "name": "qe_scf",
+          "simulator": "quantum_espresso",
+          "parameters": { "ecutwfc": 30.0, "conv_thr": 1e-06 },
+          "units": { "ecutwfc": "Ry" },
+          "expected_outputs": ["qe.in", "stdout.log", "stderr.log"],
+          "metadata": {}
+        },
+        "depends_on": [],
+        "mapping_id": null,
+        "metadata": {}
+      },
+      {
+        "name": "meep",
+        "simulator": "meep",
+        "task": {
+          "name": "meep_flux_scan",
+          "simulator": "meep",
+          "parameters": { "resolution": 20, "fcen": 0.15, "df": 0.1, "nfreq": 25, "until": 50 },
+          "units": {},
+          "expected_outputs": ["meep_results.json", "stdout.log", "stderr.log"],
+          "metadata": {}
+        },
+        "depends_on": ["qe"],
+        "mapping_id": "quantum_espresso_to_meep",
+        "metadata": {}
+      }
+    ],
+    "metadata": {
+      "story": "Infer electronic properties and feed them into a photonic-response stage."
+    }
+  },
+  "seed": 42,
+  "tags": ["workflow", "quantum-espresso", "meep", "photonics"],
+  "metadata": {
+    "operator_prompt": "Screen candidate materials by chaining QE and MEEP while preserving stage provenance.",
+    "analysis_focus": "transmission peak with upstream transfer traceability"
+  }
+}

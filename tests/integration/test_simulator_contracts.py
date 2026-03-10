@@ -8,7 +8,15 @@ from autolab.core.models import (
     SearchSpaceDimension,
 )
 from autolab.core.settings import get_settings
-from autolab.simulators import FakeSimulator, LammpsSimulator, OpenMMSimulator, SimulatorBackend
+from autolab.simulators import (
+    DevsimSimulator,
+    ElmerSimulator,
+    LammpsSimulator,
+    MeepSimulator,
+    OpenMMSimulator,
+    QuantumEspressoSimulator,
+    SimulatorBackend,
+)
 
 
 def _candidate() -> Candidate:
@@ -26,7 +34,7 @@ def _candidate() -> Candidate:
             ]
         ),
         budget=CampaignBudget(max_runs=2, batch_size=1, max_failures=1),
-        simulator=SimulatorKind.FAKE,
+        simulator=SimulatorKind.LAMMPS,
     )
     return Candidate(
         campaign_id=campaign.id,
@@ -42,9 +50,12 @@ def _candidate() -> Candidate:
 def test_adapters_implement_contract() -> None:
     settings = get_settings()
     adapters: list[SimulatorBackend] = [
-        FakeSimulator(settings),
         LammpsSimulator(settings),
+        MeepSimulator(settings),
+        QuantumEspressoSimulator(settings),
         OpenMMSimulator(settings),
+        ElmerSimulator(settings),
+        DevsimSimulator(settings),
     ]
     for adapter in adapters:
         prepared = adapter.prepare_input(_candidate())

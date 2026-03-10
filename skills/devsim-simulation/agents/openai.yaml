@@ -1,0 +1,4 @@
+interface:
+  display_name: "DEVSIM Simulation"
+  short_description: "DEVSIM stage defaults and checks"
+  default_prompt: "Use $devsim-simulation to draft or review a DEVSIM stage spec for Autolab."

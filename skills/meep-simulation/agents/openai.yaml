@@ -1,0 +1,4 @@
+interface:
+  display_name: "MEEP Simulation"
+  short_description: "MEEP photonics stage defaults"
+  default_prompt: "Use $meep-simulation to draft or review a MEEP stage spec in an Autolab workflow."

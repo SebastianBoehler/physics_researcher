@@ -36,5 +36,25 @@ class ArtifactStore:
             sha256=digest,
         )
 
+    def record_path(
+        self,
+        campaign_id: UUID,
+        run_id: UUID | None,
+        artifact_type: ArtifactType,
+        path: Path,
+        media_type: str = "application/octet-stream",
+        metadata: dict[str, object] | None = None,
+    ) -> ArtifactRecord:
+        digest = sha256_digest(path.read_bytes())
+        return ArtifactRecord(
+            campaign_id=campaign_id,
+            run_id=run_id,
+            artifact_type=artifact_type,
+            path=str(path),
+            media_type=media_type,
+            sha256=digest,
+            metadata=metadata or {},
+        )
+
     def read_text(self, artifact: ArtifactRecord) -> str:
         return Path(artifact.path).read_text(encoding="utf-8")

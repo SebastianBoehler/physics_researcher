@@ -5,7 +5,7 @@ from typing import Any
 from uuid import UUID, uuid4
 
 from autolab.core.enums import RunStatus, SimulatorKind
-from autolab.core.models import AutolabModel, SimulationInput, ValidationReport
+from autolab.core.models import AutolabModel, ExperimentSpec, SimulationInput, ValidationReport
 from pydantic import Field
 
 
@@ -15,6 +15,7 @@ class PreparedRun(AutolabModel):
     candidate_id: UUID
     simulator: SimulatorKind
     simulation_input: SimulationInput
+    experiment_spec: ExperimentSpec | None = None
     command: list[str] = Field(default_factory=list)
     environment: dict[str, str] = Field(default_factory=dict)
     metadata: dict[str, Any] = Field(default_factory=dict)

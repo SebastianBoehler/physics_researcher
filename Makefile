@@ -1,7 +1,7 @@
 UV ?= uv
 COMPOSE ?= docker compose
 
-.PHONY: sync lint format typecheck test up down api worker seed-demo
+.PHONY: sync lint format typecheck test up down api worker worker-lammps test-lammps seed-demo
 
 sync:
 	$(UV) sync --all-packages
@@ -29,6 +29,12 @@ api:
 
 worker:
 	$(UV) run python -m autolab.worker.main
+
+worker-lammps:
+	$(COMPOSE) --profile lammps up worker-lammps
+
+test-lammps:
+	$(COMPOSE) --profile lammps run --rm --no-deps worker-lammps uv run pytest tests/integration/test_real_simulator_execution.py -k lammps
 
 seed-demo:
 	$(UV) run autolab seed-demo

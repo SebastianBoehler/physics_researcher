@@ -1,0 +1,56 @@
+import json
+
+import meep as mp
+
+resolution = {{ resolution }}
+cell = mp.Vector3({{ sx }}, {{ sy }}, 0)
+boundary_layers = [mp.PML({{ dpml }})]
+geometry = [
+    mp.Block(
+        size=mp.Vector3({{ block_x }}, {{ block_y }}, mp.inf),
+        center=mp.Vector3(),
+        material=mp.Medium(index={{ refractive_index }}),
+    )
+]
+sources = [
+    mp.Source(
+        mp.GaussianSource({{ fcen }}, fwidth={{ df }}),
+        component=mp.Ez,
+        center=mp.Vector3(-0.5 * {{ sx }} + {{ dpml }} + 0.5, 0, 0),
+    )
+]
+sim = mp.Simulation(
+    cell_size=cell,
+    boundary_layers=boundary_layers,
+    geometry=geometry,
+    sources=sources,
+    resolution=resolution,
+)
+refl = sim.add_flux(
+    {{ fcen }},
+    {{ df }},
+    {{ nfreq }},
+    mp.FluxRegion(center=mp.Vector3(-0.25 * {{ sx }}, 0, 0), size=mp.Vector3(0, {{ sy }} - 2 * {{ dpml }}, 0)),
+)
+tran = sim.add_flux(
+    {{ fcen }},
+    {{ df }},
+    {{ nfreq }},
+    mp.FluxRegion(center=mp.Vector3(0.25 * {{ sx }}, 0, 0), size=mp.Vector3(0, {{ sy }} - 2 * {{ dpml }}, 0)),
+)
+sim.run(until={{ until }})
+
+frequencies = list(mp.get_flux_freqs(tran))
+transmission = [float(value) for value in mp.get_fluxes(tran)]
+reflection = [float(value) for value in mp.get_fluxes(refl)]
+
+with open("meep_results.json", "w", encoding="utf-8") as handle:
+    json.dump(
+        {
+            "frequencies": frequencies,
+            "transmission": transmission,
+            "reflection": reflection,
+        },
+        handle,
+        indent=2,
+    )

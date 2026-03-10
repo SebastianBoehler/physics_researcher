@@ -1,0 +1,39 @@
+units {{ units_style }}
+dimension {{ dimension }}
+atom_style {{ atom_style }}
+boundary {{ boundary }}
+
+{% if initialization_mode == "data_file" %}
+read_data {{ data_file_name }}
+{% else %}
+lattice {{ lattice_style }} {{ lattice_constant }}
+region box block 0 {{ box_extent }} 0 {{ box_extent }} 0 {{ box_extent }}
+create_box {{ atom_type_count }} box
+create_atoms 1 box
+{% endif %}
+
+mass 1 {{ mass }}
+pair_style lj/cut {{ cutoff }}
+pair_coeff 1 1 {{ epsilon }} {{ sigma }} {{ cutoff }}
+neighbor {{ neighbor_skin }} {{ neighbor_bin }}
+neigh_modify every {{ neigh_modify_every }} delay 0 check yes
+timestep {{ timestep }}
+
+{% if create_velocity %}
+velocity all create {{ start_temperature }} {{ seed }}
+{% endif %}
+
+{% if ensemble == "nvt" %}
+fix integrator all nvt temp {{ start_temperature }} {{ target_temperature }} {{ thermostat_damping }}
+{% elif ensemble == "npt" %}
+fix integrator all npt temp {{ start_temperature }} {{ target_temperature }} {{ thermostat_damping }} iso {{ pressure_target }} {{ pressure_target }} {{ barostat_damping }}
+{% else %}
+fix integrator all nve
+{% endif %}
+
+thermo {{ thermo_frequency }}
+thermo_style custom step temp press pe ke etotal vol density
+{% if dump_frequency > 0 %}
+dump atom_dump all custom {{ dump_frequency }} trajectory.lammpstrj id type x y z
+{% endif %}
+run {{ steps }}

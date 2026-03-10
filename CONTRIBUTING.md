@@ -32,7 +32,7 @@ npm run format:check
 
 Short imperative commits are preferred, for example:
 
-- `Add fake simulator timeout classification`
+- `Add stage timeout classification for a real simulator adapter`
 - `Refine campaign step API responses`
 
 ## Issues and feature requests

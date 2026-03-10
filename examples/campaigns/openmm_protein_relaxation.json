@@ -1,0 +1,33 @@
+{
+  "name": "openmm-protein-relaxation",
+  "description": "Single-stage molecular relaxation campaign for peptide or binder pose stabilization studies.",
+  "mode": "process_optimization",
+  "objectives": [
+    {
+      "name": "minimize_potential_energy",
+      "metric_key": "potential_energy",
+      "direction": "minimize",
+      "weight": 1.0
+    }
+  ],
+  "constraints": [],
+  "search_space": {
+    "dimensions": [
+      { "name": "temperature", "kind": "continuous", "lower": 280.0, "upper": 320.0, "choices": [] },
+      { "name": "steps", "kind": "integer", "lower": 25, "upper": 250, "choices": [] },
+      { "name": "spring_constant", "kind": "continuous", "lower": 5.0, "upper": 60.0, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 4,
+    "batch_size": 1,
+    "max_failures": 2
+  },
+  "simulator": "openmm",
+  "seed": 17,
+  "tags": ["openmm", "protein", "molecular-relaxation", "drug-discovery"],
+  "metadata": {
+    "operator_prompt": "Use OpenMM to relax candidate peptide or ligand states and retain the generated driver, manifest, and parsed energy summary for each run.",
+    "analysis_focus": "pose stabilization and potential energy reduction"
+  }
+}

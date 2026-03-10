@@ -13,10 +13,10 @@ The system needs to run autonomous closed-loop campaigns while remaining extensi
 - Introduce a strict `SimulatorBackend` protocol with `prepare_input`, `run`, `poll`, `parse`, and `validate`.
 - Keep orchestrators, skills, and agents dependent on typed transport models rather than backend-specific payloads.
 - Place engine-specific assets in isolated integration directories and keep real engines out of the default local stack.
-- Use a deterministic fake simulator as the default backend for local development, tests, and documentation.
+- Model missing binaries as structured execution failures rather than introducing a synthetic fallback backend.
 
 ## Consequences
 
 - New simulators can be added without changing campaign logic.
 - Agent reasoning remains above the simulator boundary and cannot manipulate physics-engine internals directly.
-- CI remains deterministic and lightweight because it relies on the fake simulator rather than heavyweight engine binaries.
+- CI remains lightweight because parser fixtures and cleanly skipped real-execution tests cover adapter behavior without requiring every engine binary.

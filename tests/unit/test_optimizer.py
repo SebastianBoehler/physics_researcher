@@ -33,7 +33,7 @@ def _campaign() -> Campaign:
             ]
         ),
         budget=CampaignBudget(max_runs=6, batch_size=2, max_failures=2),
-        simulator=SimulatorKind.FAKE,
+        simulator=SimulatorKind.LAMMPS,
     )
 
 
@@ -46,7 +46,7 @@ def test_bayesian_optimizer_ignores_infeasible_observations() -> None:
         SimulationRun(
             campaign_id=campaign.id,
             candidate_id=infeasible_candidate.id,
-            simulator=SimulatorKind.FAKE,
+            simulator=SimulatorKind.LAMMPS,
             metrics={"conductivity": 100.0},
             metadata={
                 "objective_score": 100.0,
@@ -56,7 +56,7 @@ def test_bayesian_optimizer_ignores_infeasible_observations() -> None:
         SimulationRun(
             campaign_id=campaign.id,
             candidate_id=feasible_candidate.id,
-            simulator=SimulatorKind.FAKE,
+            simulator=SimulatorKind.LAMMPS,
             metrics={"conductivity": 20.0},
             metadata={
                 "objective_score": 20.0,

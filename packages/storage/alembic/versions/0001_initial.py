@@ -23,6 +23,7 @@ def upgrade() -> None:
         sa.Column("budget_batch_size", sa.Integer(), nullable=False),
         sa.Column("budget_max_failures", sa.Integer(), nullable=False),
         sa.Column("tags", sa.JSON(), nullable=False),
+        sa.Column("workflow", sa.JSON(), nullable=True),
         sa.Column("metadata", sa.JSON(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
@@ -119,6 +120,32 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     )
     op.create_table(
+        "stage_executions",
+        sa.Column("id", sa.String(length=36), primary_key=True),
+        sa.Column("experiment_id", sa.String(length=36), nullable=False),
+        sa.Column(
+            "campaign_id", sa.String(length=36), sa.ForeignKey("campaigns.id"), nullable=False
+        ),
+        sa.Column(
+            "candidate_id", sa.String(length=36), sa.ForeignKey("candidates.id"), nullable=False
+        ),
+        sa.Column("simulator", sa.String(length=64), nullable=False),
+        sa.Column("stage_name", sa.String(length=128), nullable=False),
+        sa.Column("workdir_path", sa.Text(), nullable=False),
+        sa.Column("command", sa.JSON(), nullable=False),
+        sa.Column("environment", sa.JSON(), nullable=False),
+        sa.Column("input_files", sa.JSON(), nullable=False),
+        sa.Column("output_files", sa.JSON(), nullable=False),
+        sa.Column("log_files", sa.JSON(), nullable=False),
+        sa.Column("status", sa.String(length=32), nullable=False),
+        sa.Column("exit_code", sa.Integer(), nullable=True),
+        sa.Column("message", sa.Text(), nullable=False),
+        sa.Column("simulator_version", sa.String(length=64), nullable=True),
+        sa.Column("started_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("ended_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("metadata", sa.JSON(), nullable=False),
+    )
+    op.create_table(
         "agent_decisions",
         sa.Column("id", sa.String(length=36), primary_key=True),
         sa.Column(
@@ -189,6 +216,7 @@ def downgrade() -> None:
         "optimizer_states",
         "agent_decisions",
         "artifacts",
+        "stage_executions",
         "run_metrics",
         "simulation_runs",
         "candidates",

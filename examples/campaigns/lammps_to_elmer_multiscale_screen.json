@@ -1,0 +1,70 @@
+{
+  "name": "lammps-to-elmer-multiscale-screen",
+  "description": "Atomistic-to-continuum multiscale screening workflow.",
+  "mode": "materials_discovery",
+  "objectives": [
+    {
+      "name": "maximize_heat_conductivity",
+      "metric_key": "heat_conductivity",
+      "direction": "maximize",
+      "weight": 1.0
+    }
+  ],
+  "constraints": [],
+  "search_space": {
+    "dimensions": [
+      { "name": "temperature", "kind": "continuous", "lower": 0.5, "upper": 5.0, "choices": [] },
+      { "name": "steps", "kind": "integer", "lower": 5, "upper": 50, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 4,
+    "batch_size": 1,
+    "max_failures": 2
+  },
+  "simulator": "lammps",
+  "workflow": {
+    "name": "lammps-to-elmer",
+    "stages": [
+      {
+        "name": "lammps",
+        "simulator": "lammps",
+        "task": {
+          "name": "lammps_md",
+          "simulator": "lammps",
+          "parameters": { "temperature": 1.0, "steps": 10 },
+          "units": { "temperature": "lj" },
+          "expected_outputs": ["log.lammps", "stdout.log", "stderr.log"],
+          "metadata": {}
+        },
+        "depends_on": [],
+        "mapping_id": null,
+        "metadata": {}
+      },
+      {
+        "name": "elmer",
+        "simulator": "elmer",
+        "task": {
+          "name": "elmer_case",
+          "simulator": "elmer",
+          "parameters": { "steady_state_max_iterations": 10, "heat_conductivity": 10.0 },
+          "units": {},
+          "expected_outputs": ["case.sif", "stdout.log", "stderr.log"],
+          "metadata": {}
+        },
+        "depends_on": ["lammps"],
+        "mapping_id": "lammps_to_elmer",
+        "metadata": {}
+      }
+    ],
+    "metadata": {
+      "story": "Map atomistic outputs into a continuum heat-transport stage."
+    }
+  },
+  "seed": 13,
+  "tags": ["workflow", "lammps", "elmer", "multiscale"],
+  "metadata": {
+    "operator_prompt": "Run an atomistic-to-continuum workflow and retain every generated artifact and mapping.",
+    "analysis_focus": "stage transfer fidelity"
+  }
+}

@@ -1,0 +1,29 @@
+import json
+
+from devsim import (
+    add_1d_contact,
+    add_1d_mesh_line,
+    add_1d_region,
+    create_1d_mesh,
+    create_device,
+    finalize_mesh,
+    get_contact_current,
+    solve,
+)
+
+create_1d_mesh(mesh="mesh")
+add_1d_mesh_line(mesh="mesh", pos=0.0, ps=0.1, tag="left")
+add_1d_mesh_line(mesh="mesh", pos=1.0, ps=0.1, tag="right")
+add_1d_region(mesh="mesh", material="Silicon", region="bulk", tag1="left", tag2="right")
+add_1d_contact(mesh="mesh", name="anode", tag="left", material="metal")
+add_1d_contact(mesh="mesh", name="cathode", tag="right", material="metal")
+finalize_mesh(mesh="mesh")
+create_device(mesh="mesh", device="{{ device_name }}")
+
+solve(type="dc", absolute_error=1e-12, relative_error=1e-10, maximum_iterations=30)
+payload = {
+    "drain_current": float(get_contact_current(device="{{ device_name }}", contact="anode")),
+    "bias": {{ bias }},
+}
+with open("devsim_results.json", "w", encoding="utf-8") as handle:
+    json.dump(payload, handle, indent=2)

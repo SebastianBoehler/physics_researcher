@@ -187,6 +187,7 @@ dependencies = [
     { name = "autolab-skills" },
     { name = "autolab-telemetry" },
     { name = "google-adk" },
+    { name = "httpx" },
 ]
 
 [package.metadata]
@@ -195,6 +196,7 @@ requires-dist = [
     { name = "autolab-skills", editable = "packages/skills" },
     { name = "autolab-telemetry", editable = "packages/telemetry" },
     { name = "google-adk", specifier = ">=1.0.0" },
+    { name = "httpx", specifier = ">=0.28.1" },
 ]
 
 [[package]]
@@ -202,6 +204,7 @@ name = "autolab-api"
 version = "0.1.0"
 source = { editable = "apps/api" }
 dependencies = [
+    { name = "autolab-agents" },
     { name = "autolab-campaigns" },
     { name = "autolab-core" },
     { name = "autolab-simulators" },
@@ -213,6 +216,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "autolab-agents", editable = "packages/agents" },
     { name = "autolab-campaigns", editable = "packages/campaigns" },
     { name = "autolab-core", editable = "packages/core" },
     { name = "autolab-simulators", editable = "packages/simulators" },
@@ -227,6 +231,7 @@ name = "autolab-campaigns"
 version = "0.1.0"
 source = { editable = "packages/campaigns" }
 dependencies = [
+    { name = "autolab-agents" },
     { name = "autolab-core" },
     { name = "autolab-evaluation" },
     { name = "autolab-optimizers" },
@@ -241,6 +246,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "autolab-agents", editable = "packages/agents" },
     { name = "autolab-core", editable = "packages/core" },
     { name = "autolab-evaluation", editable = "packages/evaluation" },
     { name = "autolab-optimizers", editable = "packages/optimizers" },
@@ -260,6 +266,7 @@ source = { editable = "packages/cli" }
 dependencies = [
     { name = "autolab-core" },
     { name = "httpx" },
+    { name = "pydantic" },
     { name = "rich" },
     { name = "typer" },
 ]
@@ -268,6 +275,7 @@ dependencies = [
 requires-dist = [
     { name = "autolab-core", editable = "packages/core" },
     { name = "httpx", specifier = ">=0.28.1" },
+    { name = "pydantic", specifier = ">=2.11.3" },
     { name = "rich", specifier = ">=13.9.4" },
     { name = "typer", specifier = ">=0.15.2" },
 ]
@@ -331,7 +339,9 @@ dependencies = [
     { name = "autolab-core" },
     { name = "autolab-evaluation" },
     { name = "autolab-telemetry" },
+    { name = "jinja2" },
     { name = "numpy" },
+    { name = "openmm" },
     { name = "tenacity" },
 ]
 
@@ -340,7 +350,9 @@ requires-dist = [
     { name = "autolab-core", editable = "packages/core" },
     { name = "autolab-evaluation", editable = "packages/evaluation" },
     { name = "autolab-telemetry", editable = "packages/telemetry" },
+    { name = "jinja2", specifier = ">=3.1.6" },
     { name = "numpy", specifier = ">=2.2.4" },
+    { name = "openmm", specifier = ">=8.4.0.post2" },
     { name = "tenacity", specifier = ">=9.0.0" },
 ]
 
@@ -2093,6 +2105,20 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/4c/96/3b6f638f6275a8abbd45e582448723bffa29c1fb426721dedb5c72f7d056/opencensus-context-0.1.3.tar.gz", hash = "sha256:a03108c3c10d8c80bb5ddf5c8a1f033161fa61972a9917f9b9b3a18517f0088c", size = 4066, upload-time = "2022-08-03T22:20:22.359Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/10/68/162c97ea78c957d68ecf78a5c5041d2e25bd5562bdf5d89a6cbf7f8429bf/opencensus_context-0.1.3-py2.py3-none-any.whl", hash = "sha256:073bb0590007af276853009fac7e4bab1d523c3f03baf4cb4511ca38967c6039", size = 5060, upload-time = "2022-08-03T22:20:20.352Z" },
+]
+
+[[package]]
+name = "openmm"
+version = "8.4.0.post2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ab/c8/1344fa71c59e891f8dbb107aae192f661a72073ed84064c7828b1a26d9ee/openmm-8.4.0.post2-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:f3c8a012810928b1c0ae91a755d3197e81e7d03d2058d92dd4924d283edeae44", size = 13224672, upload-time = "2025-11-24T21:41:41.97Z" },
+    { url = "https://files.pythonhosted.org/packages/a7/0a/e9d1080eb107349ef090cbe0bd8335f3920708f1435b943df8c1c5496f50/openmm-8.4.0.post2-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:1bde30736f7b4b595041caf083bb4e4e79a794ab164faedd0664eda0348a299f", size = 12739310, upload-time = "2025-11-24T21:41:49.437Z" },
+    { url = "https://files.pythonhosted.org/packages/69/45/ab3937509f5dcde71fe7ac300f24a8d0684448d9b4820470360202bb95e4/openmm-8.4.0.post2-cp312-cp312-manylinux_2_34_x86_64.whl", hash = "sha256:168544c0b388ae71cc3f85e27c36c4f393854a313c4203f9e9957d6214836c13", size = 14253728, upload-time = "2025-11-24T21:41:55.662Z" },
+    { url = "https://files.pythonhosted.org/packages/06/d4/a6022476db6cd0baf0218fa33ed70182f1447e0b6bf5ded124a846c4dab9/openmm-8.4.0.post2-cp312-cp312-win_amd64.whl", hash = "sha256:6e9fd826aedf34b4c27a4dcda83da93e90f3e81305c58bcc07dafee22460a469", size = 13098413, upload-time = "2025-11-24T21:42:00.409Z" },
 ]
 
 [[package]]

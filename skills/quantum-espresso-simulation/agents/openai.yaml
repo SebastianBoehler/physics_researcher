@@ -1,0 +1,4 @@
+interface:
+  display_name: "Quantum ESPRESSO"
+  short_description: "QE stage defaults and checks"
+  default_prompt: "Use $quantum-espresso-simulation to draft or review a Quantum ESPRESSO stage spec for Autolab."

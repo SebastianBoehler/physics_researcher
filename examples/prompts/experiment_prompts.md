@@ -2,81 +2,25 @@
 
 This file is the short list of prompts to try against the current repository. It is split into:
 
-- prompts that are runnable against the current fake-simulator workflow
+- prompts that exercise the current real-adapter workflow surface
 - prompts that should drive the next round of iteration
 
 ## Runnable now
 
-### 1. Baseline closed-loop search
+### 1. Real-adapter demo run
 
-Use with [baseline_conductivity.json](../campaigns/baseline_conductivity.json).
+Use with [demo_campaign.json](../campaigns/demo_campaign.json).
 
 ```text
-Run a materials discovery campaign to maximize conductivity while keeping cost below 55 and stability above 0.7. Use a budget of 12 runs and batch size 2. After each step, explain why the next batch was chosen.
+Run a real-adapter demo campaign through the LAMMPS path. If the binary is unavailable, inspect the generated workdir, manifest, and validation metadata instead of treating the run as opaque.
 ```
 
 What this stresses:
 
 - full campaign stepping loop
-- planner and critic summaries
-- optimizer state updates
-- persistence of runs and artifacts
-
-### 2. Feasibility-first search
-
-Use with [cautious_feasible_search.json](../campaigns/cautious_feasible_search.json).
-
-```text
-Run a cautious search that prefers feasible improvement over aggressive exploration. Keep the batch size at 1 and call out when a candidate is close to violating cost or stability constraints.
-```
-
-What this stresses:
-
-- constraint handling
-- smaller batch behavior
-- run-by-run decision reporting
-
-### 3. Process window tuning
-
-Use with [process_window_tuning.json](../campaigns/process_window_tuning.json).
-
-```text
-Treat this as a process optimization campaign. Optimize anneal temperature, pressure, and synthesis time, then summarize the best operating window instead of just the single best point.
-```
-
-What this stresses:
-
-- `process_optimization` mode
-- analysis summaries for process settings
-- critic language around regimes instead of single winners
-
-### 4. Tight-budget benchmark
-
-Use with [tight_budget_screen.json](../campaigns/tight_budget_screen.json).
-
-```text
-Run a very small-budget screening campaign and report whether the first two batches are strong enough to justify a larger search. Focus on sample efficiency.
-```
-
-What this stresses:
-
-- early-step optimizer quality
-- benchmark-style reporting
-- small-budget decision quality
-
-### 5. Longer-horizon observation
-
-Use with [longer_horizon_exploration.json](../campaigns/longer_horizon_exploration.json).
-
-```text
-Run a longer fake-simulator campaign and summarize how the search direction changes across batches. Call out whether the planner appears to be exploiting a promising region or still exploring broadly.
-```
-
-What this stresses:
-
-- optimizer behavior over multiple updates
-- batch size 4 path
-- critic summaries over history
+- real simulator adapter generation
+- missing-binary failure handling
+- persistence of stage artifacts and manifests
 
 ## Prompt templates for operator testing
 
@@ -159,22 +103,143 @@ Why it matters:
 - current transport models allow multiple objectives
 - the working optimizer still behaves as single-objective-first and should be extended before treating this as production-ready
 
+### 11. Materials-to-photonics workflow
+
+Use with [qe_to_meep_photonic_screen.json](../campaigns/qe_to_meep_photonic_screen.json).
+
+```text
+Run a cross-simulator workflow that uses Quantum ESPRESSO outputs to parameterize a MEEP photonics stage. Explain every transferred parameter and keep the workdir manifests auditable.
+```
+
+Why it matters:
+
+- demonstrates typed stage handoff
+- exercises artifact generation across two simulators
+- shows interdisciplinary value beyond a single engine
+
+### 12. Electronic-to-atomistic bootstrap workflow
+
+Use with [qe_to_lammps_forcefield_bootstrap.json](../campaigns/qe_to_lammps_forcefield_bootstrap.json).
+
+```text
+Run a workflow that uses Quantum ESPRESSO outputs to bootstrap a downstream LAMMPS stage. Explain which electronic-structure quantities were transferred, which LAMMPS parameters changed as a result, and whether the provenance manifest is sufficient to reproduce the handoff.
+```
+
+Why it matters:
+
+- demonstrates a practical multiple-simulator bridge for materials work
+- makes a registered stage mapping visible to the operator
+- fits the “agent proposes, adapters execute, parser returns evidence” pattern well
+
+### 13. Multiscale materials workflow
+
+Use with [lammps_to_elmer_multiscale_screen.json](../campaigns/lammps_to_elmer_multiscale_screen.json).
+
+```text
+Run a multiscale workflow that starts in LAMMPS and maps into Elmer. Summarize both the atomistic outputs and the continuum assumptions created from them.
+```
+
+Why it matters:
+
+- demonstrates explicit stage mappings
+- tests stage-by-stage provenance capture
+- shows how downstream continuum solvers can consume upstream atomistic results
+
+### 14. Molecular relaxation workflow
+
+Use with [openmm_protein_relaxation.json](../campaigns/openmm_protein_relaxation.json).
+
+```text
+Run an OpenMM-based molecular relaxation screen and explain which candidates appear most structurally stable by the end of the minimization. Report the generated driver, parsed energy terms, and which parameter region should be explored next.
+```
+
+Why it matters:
+
+- gives the repo a concrete protein or binder-adjacent example without pretending to solve full drug discovery
+- shows how the same orchestration layer can drive molecular simulation rather than only materials engines
+- is a good starting point for future docking or sequence-design extensions
+
+### 15. Standalone photonics inverse screen
+
+Use with [meep_waveguide_inverse_screen.json](../campaigns/meep_waveguide_inverse_screen.json).
+
+```text
+Run a standalone MEEP screen over waveguide geometry and refractive index. Summarize which shapes maximize transmission while keeping the generated driver and spectrum summaries auditable.
+```
+
+Why it matters:
+
+- demonstrates a direct geometry-optimization loop in a single simulator
+- is a good template for later inverse-design workflows
+- keeps the example domain visibly different from atomistic materials work
+
+### 16. Paper benchmark workflow
+
+Use with [benchmark.json](../../benchmarks/meep_inverse_design/benchmark.json).
+
+```text
+Run the MEEP inverse-design benchmark suite, compare low-resolution, high-resolution, and QE to MEEP transfer tasks, and write a benchmark report that summarizes best metric, mean metric, success rate, artifact coverage, and workflow-stage coverage.
+```
+
+Why it matters:
+
+- maps directly to a paper-oriented evaluation
+- uses the same API and CLI surface as normal campaigns
+- gives the agent a repeatable benchmark target rather than an ad hoc prompt
+
+### 17. Cross-simulator verification workflow
+
+Use with [cross_simulator_transfer_verification.json](../campaigns/cross_simulator_transfer_verification.json).
+
+```text
+Run a verification-focused workflow and confirm that parameter echoes, mapping tolerances, artifact completeness, and provenance manifests are all present for every stage.
+```
+
+Why it matters:
+
+- treats the simulator boundary as something to verify, not just execute
+- makes cross-stage transfer assumptions testable
+- provides a strong operator example for scientific reproducibility
+
+### 18. Lennard-Jones cluster benchmark
+
+Use with [benchmark.json](../../benchmarks/openmm_lj13_cluster/benchmark.json).
+
+```text
+Run the OpenMM LJ13 cluster benchmark, report the best energy gap to the accepted global minimum, and explain whether the optimizer appears to converge, stall, or get trapped in local minima across the search history.
+```
+
+Why it matters:
+
+- upgrades the existing pair benchmark into a genuine many-body landscape
+- exposes optimizer scaling behavior in `3N-6` dimensions
+- is scientifically useful even when the current optimizer fails, because the failure mode is the result
+
 ## Suggested order
 
 If you want a disciplined progression, run them in this order:
 
-1. baseline closed-loop search
-2. cautious feasibility-first search
-3. process window tuning
-4. tight-budget benchmark
-5. longer-horizon observation
-6. failure recovery campaign
-7. early stopping by diminishing returns
+1. real-adapter demo run
+2. molecular relaxation workflow
+3. standalone photonics inverse screen
+4. materials-to-photonics workflow
+5. electronic-to-atomistic bootstrap workflow
+6. multiscale materials workflow
+7. paper benchmark workflow
+8. cross-simulator verification workflow
+9. Lennard-Jones cluster benchmark
+10. failure recovery campaign
+11. early stopping by diminishing returns
 
 ## CLI examples
 
 ```bash
-uv run autolab create-campaign examples/campaigns/baseline_conductivity.json
-uv run autolab create-campaign examples/campaigns/process_window_tuning.json
-uv run autolab create-campaign examples/campaigns/tight_budget_screen.json
+uv run autolab create-campaign examples/campaigns/demo_campaign.json
+uv run autolab create-campaign examples/campaigns/openmm_protein_relaxation.json
+uv run autolab create-campaign examples/campaigns/meep_waveguide_inverse_screen.json
+uv run autolab create-campaign examples/campaigns/qe_to_meep_photonic_screen.json
+uv run autolab create-campaign examples/campaigns/qe_to_lammps_forcefield_bootstrap.json
+uv run autolab create-campaign examples/campaigns/cross_simulator_transfer_verification.json
+uv run autolab run-benchmark benchmarks/meep_inverse_design/benchmark.json --execute-inline
+uv run autolab run-benchmark benchmarks/openmm_lj13_cluster/benchmark.json --execute-inline
 ```

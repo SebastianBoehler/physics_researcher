@@ -8,6 +8,8 @@ def test_builtin_skill_registry_contains_expected_skills() -> None:
     names = {skill.name for skill in registry.list()}
     assert "propose_candidates" in names
     assert "compare_recent_experiments" in names
+    assert "create_experiment_spec" in names
+    assert "launch_simulation_stage" in names
 
 
 def test_rank_candidates_skill_orders_by_prediction() -> None:
@@ -58,7 +60,7 @@ def test_compare_recent_experiments_uses_feasible_runs_for_summary() -> None:
         SimulationRun(
             campaign_id="00000000-0000-0000-0000-000000000001",
             candidate_id="00000000-0000-0000-0000-000000000011",
-            simulator="fake",
+            simulator="lammps",
             metrics={"conductivity": 100.0},
             metadata={
                 "objective_score": 100.0,
@@ -68,7 +70,7 @@ def test_compare_recent_experiments_uses_feasible_runs_for_summary() -> None:
         SimulationRun(
             campaign_id="00000000-0000-0000-0000-000000000001",
             candidate_id="00000000-0000-0000-0000-000000000012",
-            simulator="fake",
+            simulator="lammps",
             metrics={"conductivity": 20.0},
             metadata={
                 "objective_score": 20.0,

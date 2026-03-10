@@ -1,0 +1,34 @@
+{
+  "name": "meep-waveguide-inverse-screen",
+  "description": "Standalone photonics screening campaign for waveguide geometry and refractive-index tuning.",
+  "mode": "materials_discovery",
+  "objectives": [
+    {
+      "name": "maximize_transmission_peak",
+      "metric_key": "transmission_peak",
+      "direction": "maximize",
+      "weight": 1.0
+    }
+  ],
+  "constraints": [],
+  "search_space": {
+    "dimensions": [
+      { "name": "block_x", "kind": "continuous", "lower": 0.5, "upper": 2.0, "choices": [] },
+      { "name": "block_y", "kind": "continuous", "lower": 2.0, "upper": 6.0, "choices": [] },
+      { "name": "refractive_index", "kind": "continuous", "lower": 1.4, "upper": 4.0, "choices": [] },
+      { "name": "resolution", "kind": "integer", "lower": 12, "upper": 36, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 4,
+    "batch_size": 1,
+    "max_failures": 2
+  },
+  "simulator": "meep",
+  "seed": 9,
+  "tags": ["meep", "photonics", "inverse-design", "waveguide"],
+  "metadata": {
+    "operator_prompt": "Use MEEP to screen photonic geometry parameters while preserving the generated Python driver, launch script, and spectrum summary.",
+    "analysis_focus": "transmission and reflection shaping"
+  }
+}

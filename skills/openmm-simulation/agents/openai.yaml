@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenMM Simulation"
+  short_description: "OpenMM stage defaults and checks"
+  default_prompt: "Use $openmm-simulation to draft or review an OpenMM stage spec for Autolab."

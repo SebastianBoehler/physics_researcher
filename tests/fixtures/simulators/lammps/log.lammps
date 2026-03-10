@@ -1,0 +1,5 @@
+LAMMPS (29 Aug 2024)
+Step Temp Press Pe Etotal Vol
+0 1.000000 -0.135  -5.000000 -3.500000 64.000000
+1 0.950000 -0.120  -4.800000 -3.300000 64.000000
+Loop time of 0.002 on 1 procs for 1 steps with 64 atoms

@@ -7,6 +7,7 @@ from uuid import UUID
 from autolab.core.models import Candidate, Constraint, SimulationRun
 from autolab.evaluation import validate_constraints
 from autolab.skills.registry import SkillContext, SkillRegistry, SkillSpec
+from autolab.skills.simulation import get_simulation_skill_specs
 from pydantic import BaseModel, Field
 
 
@@ -286,6 +287,7 @@ def get_builtin_skills() -> SkillRegistry:
             CompareRecentExperimentsOutput,
             _compare_recent,
         ),
+        *get_simulation_skill_specs(),
     ]
     for skill in skills:
         registry.register(skill)

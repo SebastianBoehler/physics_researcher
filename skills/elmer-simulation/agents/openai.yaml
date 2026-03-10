@@ -1,0 +1,4 @@
+interface:
+  display_name: "Elmer Simulation"
+  short_description: "Elmer FEM stage defaults"
+  default_prompt: "Use $elmer-simulation to draft or review an Elmer stage spec in an Autolab workflow."

@@ -14,6 +14,8 @@ class AppConfig(BaseSettings):
     api_port: int = 8000
     artifact_root: Path = Path("artifacts")
     execution_mode: str = "async"
+    max_parallel_runs: int = 1
+    max_parallel_benchmark_campaigns: int = 1
 
     model_config = SettingsConfigDict(env_prefix="AUTOLAB_", extra="ignore")
 
@@ -59,9 +61,40 @@ class AuthConfig(BaseSettings):
 
 
 class SimulatorConfig(BaseSettings):
-    default_simulator: SimulatorKind = SimulatorKind.FAKE
-    enable_lammps: bool = False
+    default_simulator: SimulatorKind = SimulatorKind.LAMMPS
+    enable_lammps: bool = True
+    enable_meep: bool = False
+    enable_quantum_espresso: bool = False
     enable_openmm: bool = False
+    enable_elmer: bool = False
+    enable_devsim: bool = False
+    working_directory_root: Path = Path("artifacts/runs")
+    artifact_retention_policy: str = "keep"
+    default_timeout_seconds: int = 900
+    lammps_bin: str = "lmp"
+    lammps_timeout_seconds: int = 900
+    lammps_wrapper: str | None = None
+    lammps_environment: dict[str, str] = Field(default_factory=dict)
+    meep_bin: str = "python"
+    meep_timeout_seconds: int = 900
+    meep_wrapper: str | None = None
+    meep_environment: dict[str, str] = Field(default_factory=dict)
+    qe_pw_bin: str = "pw.x"
+    quantum_espresso_timeout_seconds: int = 1800
+    quantum_espresso_wrapper: str | None = None
+    quantum_espresso_environment: dict[str, str] = Field(default_factory=dict)
+    openmm_bin: str = "python"
+    openmm_timeout_seconds: int = 900
+    openmm_wrapper: str | None = None
+    openmm_environment: dict[str, str] = Field(default_factory=dict)
+    elmer_solver_bin: str = "ElmerSolver"
+    elmer_timeout_seconds: int = 1800
+    elmer_wrapper: str | None = None
+    elmer_environment: dict[str, str] = Field(default_factory=dict)
+    devsim_bin: str = "devsim"
+    devsim_timeout_seconds: int = 900
+    devsim_wrapper: str | None = None
+    devsim_environment: dict[str, str] = Field(default_factory=dict)
 
     model_config = SettingsConfigDict(env_prefix="AUTOLAB_", extra="ignore")
 
@@ -91,9 +124,9 @@ class Settings(BaseSettings):
     mlflow: MlflowConfig = Field(default_factory=MlflowConfig)
     otel: OTelConfig = Field(default_factory=OTelConfig)
     auth: AuthConfig = Field(default_factory=AuthConfig)
-    literature: LiteratureConfig = Field(default_factory=LiteratureConfig)
     simulators: SimulatorConfig = Field(default_factory=SimulatorConfig)
     model_provider: ModelProviderConfig = Field(default_factory=ModelProviderConfig)
+    literature: LiteratureConfig = Field(default_factory=LiteratureConfig)
 
     model_config = SettingsConfigDict(
         env_prefix="AUTOLAB_",
@@ -104,6 +137,7 @@ class Settings(BaseSettings):
 
     def ensure_directories(self) -> None:
         self.app.artifact_root.mkdir(parents=True, exist_ok=True)
+        self.simulators.working_directory_root.mkdir(parents=True, exist_ok=True)
 
     def snapshot(self) -> dict[str, object]:
         return self.model_dump(mode="json")

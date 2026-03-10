@@ -1,0 +1,76 @@
+{
+  "name": "benchmark-qe-to-meep-transfer",
+  "description": "Cross-simulator benchmark task that measures electronic-structure-informed photonic screening.",
+  "mode": "materials_discovery",
+  "objectives": [
+    {
+      "name": "maximize_transmission_peak",
+      "metric_key": "transmission_peak",
+      "direction": "maximize",
+      "weight": 1.0
+    }
+  ],
+  "constraints": [],
+  "search_space": {
+    "dimensions": [
+      { "name": "ecutwfc", "kind": "continuous", "lower": 20.0, "upper": 80.0, "choices": [] },
+      { "name": "resolution", "kind": "integer", "lower": 16, "upper": 28, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 4,
+    "batch_size": 1,
+    "max_failures": 2
+  },
+  "simulator": "quantum_espresso",
+  "workflow": {
+    "name": "benchmark-qe-to-meep-transfer",
+    "stages": [
+      {
+        "name": "qe",
+        "simulator": "quantum_espresso",
+        "task": {
+          "name": "qe_scf",
+          "simulator": "quantum_espresso",
+          "parameters": { "ecutwfc": 30.0, "conv_thr": 1e-06 },
+          "units": { "ecutwfc": "Ry" },
+          "expected_outputs": ["qe.in", "stdout.log", "stderr.log"],
+          "metadata": {
+            "benchmark_role": "upstream_material_stage"
+          }
+        },
+        "depends_on": [],
+        "mapping_id": null,
+        "metadata": {}
+      },
+      {
+        "name": "meep",
+        "simulator": "meep",
+        "task": {
+          "name": "meep_flux_scan",
+          "simulator": "meep",
+          "parameters": { "resolution": 20, "fcen": 0.15, "df": 0.1, "nfreq": 25, "until": 50 },
+          "units": {},
+          "expected_outputs": ["meep_results.json", "stdout.log", "stderr.log"],
+          "metadata": {
+            "benchmark_role": "downstream_photonic_stage"
+          }
+        },
+        "depends_on": ["qe"],
+        "mapping_id": "quantum_espresso_to_meep",
+        "metadata": {}
+      }
+    ],
+    "metadata": {
+      "benchmark_family": "meep_inverse_design",
+      "difficulty": "transfer"
+    }
+  },
+  "seed": 103,
+  "tags": ["benchmark", "quantum-espresso", "meep", "transfer"],
+  "metadata": {
+    "benchmark_id": "qe-to-meep-transfer",
+    "operator_prompt": "Use this benchmark to compare standalone MEEP screening against a cross-simulator QE to MEEP transfer workflow.",
+    "analysis_focus": "cross-simulator photonic optimization"
+  }
+}

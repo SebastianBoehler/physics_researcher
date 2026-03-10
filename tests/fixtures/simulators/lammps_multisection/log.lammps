@@ -1,0 +1,10 @@
+LAMMPS (29 Aug 2024)
+Step Temp Press Pe Ke Etotal Vol Density
+0 1.000000 -0.135 -5.000000 1.500000 -3.500000 64.000000 0.950000
+5 0.970000 -0.121 -4.850000 1.510000 -3.340000 64.000000 0.949000
+
+WARNING: Neighbor list overflow, restart with larger one
+Step Temp Press Pe Ke Etotal Vol Density
+10 0.960000 -0.119 -4.820000 1.520000 -3.300000 64.000000 0.948000
+20 0.940000 -0.110 -4.760000 1.540000 -3.220000 64.000000 0.947000
+Loop time of 0.004 on 2 procs for 20 steps with 64 atoms

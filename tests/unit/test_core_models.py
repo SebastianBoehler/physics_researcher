@@ -26,7 +26,7 @@ def test_campaign_model_builds() -> None:
             ]
         ),
         budget=CampaignBudget(max_runs=4, batch_size=2, max_failures=1),
-        simulator=SimulatorKind.FAKE,
+        simulator=SimulatorKind.LAMMPS,
     )
     assert campaign.budget.batch_size == 2
     assert campaign.objectives[0].metric_key == "conductivity"

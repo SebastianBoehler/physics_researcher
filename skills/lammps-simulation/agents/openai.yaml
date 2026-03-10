@@ -1,0 +1,4 @@
+interface:
+  display_name: "LAMMPS Simulation"
+  short_description: "LAMMPS stage defaults and checks"
+  default_prompt: "Use $lammps-simulation to draft or review a LAMMPS stage spec for an Autolab workflow."

@@ -1,0 +1,16 @@
+{
+  "name": "openmm-lj-pair-v1",
+  "description": "A live OpenMM benchmark that measures how closely the optimization loop can recover the known Lennard-Jones equilibrium energy and separation.",
+  "paper_hypothesis": "The agentic Autolab loop can approach the known Lennard-Jones optimum with a small number of real OpenMM evaluations while preserving full provenance and rerunnable artifacts.",
+  "primary_metric": "energy_gap_to_reference",
+  "campaigns": [
+    "examples/campaigns/openmm_lj_pair_equilibrium.json"
+  ],
+  "evaluation": {
+    "reference_best_metric": 0.0,
+    "reference_direction": "minimize",
+    "reference_distance_nm": 0.38163709642518684,
+    "reference_energy_kj_per_mol": -0.997,
+    "reference_note": "For a Lennard-Jones pair, the global minimum occurs at r = 2^(1/6) sigma and V(r*) = -epsilon."
+  }
+}

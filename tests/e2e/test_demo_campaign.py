@@ -29,6 +29,8 @@ def test_demo_campaign_closed_loop() -> None:
     assert second_step.status_code == 200
     runs = client.get(f"/campaigns/{campaign['id']}/runs", headers=headers).json()["runs"]
     assert len(runs) == 4
+    assert all(run["simulator"] == "lammps" for run in runs)
+    assert all("workflow_stage_order" in run["metadata"] for run in runs)
 
 
 def test_step_returns_updated_campaign_status_when_budget_is_exhausted() -> None:
