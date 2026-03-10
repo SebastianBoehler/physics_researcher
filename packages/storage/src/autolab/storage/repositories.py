@@ -11,6 +11,10 @@ from autolab.core.enums import (
     FailureClass,
     ObjectiveDirection,
     ParameterKind,
+    ReviewParticipantType,
+    ReviewRoundMode,
+    ReviewRoundStatus,
+    ReviewStatus,
     RunStatus,
     SimulatorKind,
 )
@@ -23,9 +27,17 @@ from autolab.core.models import (
     Constraint,
     Objective,
     OptimizerState,
+    ReviewArtifactLink,
+    ReviewParticipant,
+    ReviewPost,
+    ReviewRound,
+    ReviewThread,
+    ReviewThreadDetail,
     SearchSpace,
     SearchSpaceDimension,
+    SimulationExecutionRecord,
     SimulationRun,
+    SimulationWorkflow,
 )
 from autolab.storage.models import (
     AgentDecisionORM,
@@ -36,9 +48,16 @@ from autolab.storage.models import (
     ConstraintORM,
     ObjectiveORM,
     OptimizerStateORM,
+    ReviewArtifactLinkORM,
+    ReviewParticipantORM,
+    ReviewPostORM,
+    ReviewRoundORM,
+    ReviewThreadORM,
     RunMetricORM,
     SearchDimensionORM,
     SimulationRunORM,
+    SimulatorProvenanceORM,
+    StageExecutionORM,
     SummaryORM,
 )
 from sqlalchemy import select
@@ -62,6 +81,9 @@ class CampaignRepository:
             budget_batch_size=campaign.budget.batch_size,
             budget_max_failures=campaign.budget.max_failures,
             tags=campaign.tags,
+            workflow_payload=(
+                campaign.workflow.model_dump(mode="json") if campaign.workflow is not None else None
+            ),
             metadata_payload=campaign.metadata,
         )
         campaign_row.objectives = [
@@ -173,6 +195,11 @@ class CampaignRepository:
                 max_failures=row.budget_max_failures,
             ),
             simulator=SimulatorKind(row.simulator),
+            workflow=(
+                SimulationWorkflow.model_validate(row.workflow_payload)
+                if row.workflow_payload is not None
+                else None
+            ),
             status=CampaignStatus(row.status),
             seed=row.seed,
             tags=row.tags,
@@ -316,6 +343,162 @@ class ArtifactRepository:
             created_at=row.created_at,
         )
 
+    def list_by_ids(self, artifact_ids: list[UUID]) -> list[ArtifactRecord]:
+        if not artifact_ids:
+            return []
+        rows = self._session.scalars(
+            select(ArtifactORM).where(
+                ArtifactORM.id.in_([str(artifact_id) for artifact_id in artifact_ids])
+            )
+        ).all()
+        return [
+            ArtifactRecord(
+                id=UUID(row.id),
+                campaign_id=UUID(row.campaign_id),
+                run_id=UUID(row.run_id) if row.run_id else None,
+                artifact_type=ArtifactType(row.artifact_type),
+                path=row.path,
+                media_type=row.media_type,
+                sha256=row.sha256,
+                metadata=row.metadata_payload,
+                created_at=row.created_at,
+            )
+            for row in rows
+        ]
+
+    def list_for_campaign(self, campaign_id: UUID) -> list[ArtifactRecord]:
+        rows = self._session.scalars(
+            select(ArtifactORM)
+            .where(ArtifactORM.campaign_id == str(campaign_id))
+            .order_by(ArtifactORM.created_at)
+        ).all()
+        return [
+            ArtifactRecord(
+                id=UUID(row.id),
+                campaign_id=UUID(row.campaign_id),
+                run_id=UUID(row.run_id) if row.run_id else None,
+                artifact_type=ArtifactType(row.artifact_type),
+                path=row.path,
+                media_type=row.media_type,
+                sha256=row.sha256,
+                metadata=row.metadata_payload,
+                created_at=row.created_at,
+            )
+            for row in rows
+        ]
+
+
+class StageExecutionRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def create(self, record: SimulationExecutionRecord) -> SimulationExecutionRecord:
+        self._session.add(
+            StageExecutionORM(
+                id=str(record.id),
+                experiment_id=str(record.experiment_id),
+                campaign_id=str(record.campaign_id),
+                candidate_id=str(record.candidate_id),
+                simulator=record.simulator.value,
+                stage_name=record.stage_name,
+                workdir_path=record.workdir_path,
+                command=record.command,
+                environment=record.environment,
+                input_files=record.input_files,
+                output_files=record.output_files,
+                log_files=record.log_files,
+                status=record.status.value,
+                exit_code=record.exit_code,
+                message=record.message,
+                simulator_version=record.simulator_version,
+                started_at=record.started_at,
+                ended_at=record.ended_at,
+                metadata_payload=record.metadata,
+            )
+        )
+        self._session.flush()
+        return record
+
+    def update(self, record: SimulationExecutionRecord) -> SimulationExecutionRecord:
+        row = self._session.get(StageExecutionORM, str(record.id))
+        if row is None:
+            msg = f"stage execution {record.id} not found"
+            raise KeyError(msg)
+        row.command = record.command
+        row.environment = record.environment
+        row.input_files = record.input_files
+        row.output_files = record.output_files
+        row.log_files = record.log_files
+        row.status = record.status.value
+        row.exit_code = record.exit_code
+        row.message = record.message
+        row.simulator_version = record.simulator_version
+        row.started_at = record.started_at
+        row.ended_at = record.ended_at
+        row.metadata_payload = record.metadata
+        self._session.flush()
+        return record
+
+    def list_for_campaign(self, campaign_id: UUID) -> list[SimulationExecutionRecord]:
+        rows = self._session.scalars(
+            select(StageExecutionORM).where(StageExecutionORM.campaign_id == str(campaign_id))
+        ).all()
+        return [self._to_domain(row) for row in rows]
+
+    def list_for_experiment(self, experiment_id: UUID) -> list[SimulationExecutionRecord]:
+        rows = self._session.scalars(
+            select(StageExecutionORM).where(StageExecutionORM.experiment_id == str(experiment_id))
+        ).all()
+        return [self._to_domain(row) for row in rows]
+
+    def _to_domain(self, row: StageExecutionORM) -> SimulationExecutionRecord:
+        return SimulationExecutionRecord(
+            id=UUID(row.id),
+            experiment_id=UUID(row.experiment_id),
+            campaign_id=UUID(row.campaign_id),
+            candidate_id=UUID(row.candidate_id),
+            simulator=SimulatorKind(row.simulator),
+            stage_name=row.stage_name,
+            workdir_path=row.workdir_path,
+            command=row.command,
+            environment=row.environment,
+            input_files=row.input_files,
+            output_files=row.output_files,
+            log_files=row.log_files,
+            status=RunStatus(row.status),
+            exit_code=row.exit_code,
+            message=row.message,
+            simulator_version=row.simulator_version,
+            started_at=row.started_at,
+            ended_at=row.ended_at,
+            metadata=row.metadata_payload,
+        )
+
+
+class SimulatorProvenanceRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def create(
+        self,
+        run_id: UUID,
+        simulator: SimulatorKind,
+        adapter_version: str,
+        input_sha256: str,
+        output_sha256: str | None,
+        payload: dict[str, object],
+    ) -> None:
+        self._session.add(
+            SimulatorProvenanceORM(
+                run_id=str(run_id),
+                simulator=simulator.value,
+                adapter_version=adapter_version,
+                input_sha256=input_sha256,
+                output_sha256=output_sha256,
+                payload=payload,
+            )
+        )
+
 
 class DecisionRepository:
     def __init__(self, session: Session) -> None:
@@ -335,6 +518,302 @@ class DecisionRepository:
         )
         self._session.flush()
         return decision
+
+    def list_for_campaign(
+        self, campaign_id: UUID, run_id: UUID | None = None
+    ) -> list[AgentDecision]:
+        statement = select(AgentDecisionORM).where(AgentDecisionORM.campaign_id == str(campaign_id))
+        if run_id is not None:
+            statement = statement.where(AgentDecisionORM.run_id == str(run_id))
+        rows = self._session.scalars(statement.order_by(AgentDecisionORM.created_at)).all()
+        return [
+            AgentDecision(
+                id=UUID(row.id),
+                campaign_id=UUID(row.campaign_id),
+                run_id=UUID(row.run_id) if row.run_id is not None else None,
+                agent_name=row.agent_name,
+                action=row.action,
+                rationale=row.rationale,
+                structured_output=row.structured_output,
+                created_at=row.created_at,
+            )
+            for row in rows
+        ]
+
+
+class SummaryRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def list_for_campaign(
+        self, campaign_id: UUID, run_id: UUID | None = None
+    ) -> list[dict[str, object]]:
+        statement = select(SummaryORM).where(SummaryORM.campaign_id == str(campaign_id))
+        if run_id is not None:
+            statement = statement.where(SummaryORM.run_id == str(run_id))
+        rows = self._session.scalars(statement.order_by(SummaryORM.created_at)).all()
+        return [
+            {
+                "id": row.id,
+                "campaign_id": row.campaign_id,
+                "run_id": row.run_id,
+                "summary_type": row.summary_type,
+                "body": row.body,
+                "created_at": row.created_at,
+            }
+            for row in rows
+        ]
+
+
+class ReviewRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def create_thread(self, review: ReviewThread) -> ReviewThread:
+        self._session.add(
+            ReviewThreadORM(
+                id=str(review.id),
+                campaign_id=str(review.campaign_id),
+                run_id=str(review.run_id) if review.run_id is not None else None,
+                title=review.title,
+                objective=review.objective,
+                status=review.status.value,
+                created_by=review.created_by,
+                resolution_summary=review.resolution_summary,
+                created_at=review.created_at,
+                updated_at=review.updated_at,
+            )
+        )
+        self._session.flush()
+        return review
+
+    def get_thread(self, review_id: UUID) -> ReviewThread | None:
+        row = self._session.get(ReviewThreadORM, str(review_id))
+        return None if row is None else self._thread_to_domain(row)
+
+    def get_thread_detail(self, review_id: UUID) -> ReviewThreadDetail | None:
+        thread = self.get_thread(review_id)
+        if thread is None:
+            return None
+        return ReviewThreadDetail(
+            **thread.model_dump(),
+            participants=self.list_participants(review_id),
+            artifact_ids=[link.artifact_id for link in self.list_artifact_links(review_id)],
+            rounds=self.list_rounds(review_id),
+        )
+
+    def list_threads(self, campaign_id: UUID, run_id: UUID | None = None) -> list[ReviewThread]:
+        statement = select(ReviewThreadORM).where(ReviewThreadORM.campaign_id == str(campaign_id))
+        if run_id is not None:
+            statement = statement.where(ReviewThreadORM.run_id == str(run_id))
+        rows = self._session.scalars(statement.order_by(ReviewThreadORM.created_at.desc())).all()
+        return [self._thread_to_domain(row) for row in rows]
+
+    def update_thread(self, review: ReviewThread) -> ReviewThread:
+        row = self._session.get(ReviewThreadORM, str(review.id))
+        if row is None:
+            msg = f"review {review.id} not found"
+            raise KeyError(msg)
+        row.title = review.title
+        row.objective = review.objective
+        row.status = review.status.value
+        row.created_by = review.created_by
+        row.resolution_summary = review.resolution_summary
+        row.updated_at = review.updated_at
+        self._session.flush()
+        return review
+
+    def upsert_participant(self, participant: ReviewParticipant) -> ReviewParticipant:
+        statement = select(ReviewParticipantORM).where(
+            ReviewParticipantORM.review_id == str(participant.review_id),
+            ReviewParticipantORM.participant_key == participant.participant_key,
+        )
+        row = self._session.scalar(statement)
+        if row is None:
+            row = ReviewParticipantORM(
+                id=str(participant.id),
+                review_id=str(participant.review_id),
+                participant_key=participant.participant_key,
+                participant_type=participant.participant_type.value,
+                role_label=participant.role_label,
+                created_at=participant.created_at,
+            )
+            self._session.add(row)
+        else:
+            row.participant_type = participant.participant_type.value
+            row.role_label = participant.role_label
+        self._session.flush()
+        return participant
+
+    def list_participants(self, review_id: UUID) -> list[ReviewParticipant]:
+        rows = self._session.scalars(
+            select(ReviewParticipantORM)
+            .where(ReviewParticipantORM.review_id == str(review_id))
+            .order_by(ReviewParticipantORM.created_at)
+        ).all()
+        return [
+            ReviewParticipant(
+                id=UUID(row.id),
+                review_id=UUID(row.review_id),
+                participant_key=row.participant_key,
+                participant_type=ReviewParticipantType(row.participant_type),
+                role_label=row.role_label,
+                created_at=row.created_at,
+            )
+            for row in rows
+        ]
+
+    def create_post(self, post: ReviewPost) -> ReviewPost:
+        self._session.add(
+            ReviewPostORM(
+                id=str(post.id),
+                review_id=str(post.review_id),
+                round_id=str(post.round_id) if post.round_id is not None else None,
+                parent_post_id=(
+                    str(post.parent_post_id) if post.parent_post_id is not None else None
+                ),
+                author_key=post.author_key,
+                author_type=post.author_type.value,
+                body=post.body,
+                structured_payload=post.structured_payload,
+                created_at=post.created_at,
+            )
+        )
+        self._session.flush()
+        return post
+
+    def list_posts(self, review_id: UUID) -> list[ReviewPost]:
+        rows = self._session.scalars(
+            select(ReviewPostORM)
+            .where(ReviewPostORM.review_id == str(review_id))
+            .order_by(ReviewPostORM.created_at)
+        ).all()
+        return [
+            ReviewPost(
+                id=UUID(row.id),
+                review_id=UUID(row.review_id),
+                round_id=UUID(row.round_id) if row.round_id is not None else None,
+                parent_post_id=UUID(row.parent_post_id) if row.parent_post_id is not None else None,
+                author_key=row.author_key,
+                author_type=ReviewParticipantType(row.author_type),
+                body=row.body,
+                structured_payload=row.structured_payload,
+                created_at=row.created_at,
+            )
+            for row in rows
+        ]
+
+    def create_round(self, round_record: ReviewRound) -> ReviewRound:
+        self._session.add(
+            ReviewRoundORM(
+                id=str(round_record.id),
+                review_id=str(round_record.review_id),
+                mode=round_record.mode.value,
+                status=round_record.status.value,
+                participant_keys=round_record.participant_keys,
+                recommendation=(
+                    round_record.recommendation.value
+                    if round_record.recommendation is not None
+                    else None
+                ),
+                error_message=round_record.error_message,
+                metadata_payload=round_record.metadata,
+                created_at=round_record.created_at,
+                started_at=round_record.started_at,
+                completed_at=round_record.completed_at,
+            )
+        )
+        self._session.flush()
+        return round_record
+
+    def get_round(self, round_id: UUID) -> ReviewRound | None:
+        row = self._session.get(ReviewRoundORM, str(round_id))
+        return None if row is None else self._round_to_domain(row)
+
+    def list_rounds(self, review_id: UUID) -> list[ReviewRound]:
+        rows = self._session.scalars(
+            select(ReviewRoundORM)
+            .where(ReviewRoundORM.review_id == str(review_id))
+            .order_by(ReviewRoundORM.created_at)
+        ).all()
+        return [self._round_to_domain(row) for row in rows]
+
+    def update_round(self, round_record: ReviewRound) -> ReviewRound:
+        row = self._session.get(ReviewRoundORM, str(round_record.id))
+        if row is None:
+            msg = f"review round {round_record.id} not found"
+            raise KeyError(msg)
+        row.mode = round_record.mode.value
+        row.status = round_record.status.value
+        row.participant_keys = round_record.participant_keys
+        row.recommendation = (
+            round_record.recommendation.value if round_record.recommendation is not None else None
+        )
+        row.error_message = round_record.error_message
+        row.metadata_payload = round_record.metadata
+        row.started_at = round_record.started_at
+        row.completed_at = round_record.completed_at
+        self._session.flush()
+        return round_record
+
+    def create_artifact_link(self, link: ReviewArtifactLink) -> ReviewArtifactLink:
+        self._session.add(
+            ReviewArtifactLinkORM(
+                id=str(link.id),
+                review_id=str(link.review_id),
+                artifact_id=str(link.artifact_id),
+                created_at=link.created_at,
+            )
+        )
+        self._session.flush()
+        return link
+
+    def list_artifact_links(self, review_id: UUID) -> list[ReviewArtifactLink]:
+        rows = self._session.scalars(
+            select(ReviewArtifactLinkORM)
+            .where(ReviewArtifactLinkORM.review_id == str(review_id))
+            .order_by(ReviewArtifactLinkORM.created_at)
+        ).all()
+        return [
+            ReviewArtifactLink(
+                id=UUID(row.id),
+                review_id=UUID(row.review_id),
+                artifact_id=UUID(row.artifact_id),
+                created_at=row.created_at,
+            )
+            for row in rows
+        ]
+
+    @staticmethod
+    def _thread_to_domain(row: ReviewThreadORM) -> ReviewThread:
+        return ReviewThread(
+            id=UUID(row.id),
+            campaign_id=UUID(row.campaign_id),
+            run_id=UUID(row.run_id) if row.run_id is not None else None,
+            title=row.title,
+            objective=row.objective,
+            status=ReviewStatus(row.status),
+            created_by=row.created_by,
+            resolution_summary=row.resolution_summary,
+            created_at=row.created_at,
+            updated_at=row.updated_at,
+        )
+
+    @staticmethod
+    def _round_to_domain(row: ReviewRoundORM) -> ReviewRound:
+        return ReviewRound(
+            id=UUID(row.id),
+            review_id=UUID(row.review_id),
+            mode=ReviewRoundMode(row.mode),
+            status=ReviewRoundStatus(row.status),
+            participant_keys=row.participant_keys,
+            recommendation=ReviewStatus(row.recommendation) if row.recommendation else None,
+            error_message=row.error_message,
+            metadata=row.metadata_payload,
+            created_at=row.created_at,
+            started_at=row.started_at,
+            completed_at=row.completed_at,
+        )
 
 
 class OptimizerStateRepository:

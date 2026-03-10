@@ -5,14 +5,32 @@ from typing import Any, cast
 from uuid import UUID
 
 from autolab.core.settings import Settings
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from redis import Redis
 
 
 class CampaignEvent(BaseModel):
-    campaign_id: UUID
+    campaign_id: UUID | None = None
+    review_id: UUID | None = None
+    review_round_id: UUID | None = None
     event_type: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+    @model_validator(mode="after")
+    def validate_target(self) -> CampaignEvent:
+        if self.campaign_id is None and self.review_round_id is None:
+            msg = "campaign_id or review_round_id is required"
+            raise ValueError(msg)
+        return self
+
+    @property
+    def target_id(self) -> UUID:
+        if self.campaign_id is not None:
+            return self.campaign_id
+        if self.review_round_id is not None:
+            return self.review_round_id
+        msg = "campaign or review round target is required"
+        raise ValueError(msg)
 
 
 class CampaignQueue:

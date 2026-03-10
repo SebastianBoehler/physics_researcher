@@ -3,13 +3,25 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
-from autolab.core.enums import CampaignMode, CampaignStatus, SimulatorKind
+from autolab.core.enums import (
+    CampaignMode,
+    CampaignStatus,
+    ReviewParticipantType,
+    ReviewRoundMode,
+    ReviewStatus,
+    SimulatorKind,
+)
 from autolab.core.models import (
     CampaignBudget,
     Constraint,
     Objective,
+    ReviewPost,
+    ReviewRound,
+    ReviewThread,
+    ReviewThreadDetail,
     SearchSpace,
     SimulationRun,
+    SimulationWorkflow,
 )
 from pydantic import BaseModel, Field
 
@@ -22,7 +34,8 @@ class CreateCampaignRequest(BaseModel):
     constraints: list[Constraint] = Field(default_factory=list)
     search_space: SearchSpace
     budget: CampaignBudget
-    simulator: SimulatorKind = SimulatorKind.FAKE
+    simulator: SimulatorKind = SimulatorKind.LAMMPS
+    workflow: SimulationWorkflow | None = None
     seed: int = 42
     tags: list[str] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
@@ -55,3 +68,54 @@ class HealthResponse(BaseModel):
 
 class RunListResponse(BaseModel):
     runs: list[SimulationRun]
+
+
+class ReviewParticipantInput(BaseModel):
+    participant_key: str
+    participant_type: ReviewParticipantType
+    role_label: str
+
+
+class CreateReviewRequest(BaseModel):
+    title: str
+    objective: str
+    created_by: str
+    run_id: UUID | None = None
+    artifact_ids: list[UUID] = Field(default_factory=list)
+    participants: list[ReviewParticipantInput] = Field(default_factory=list)
+
+
+class ReviewListResponse(BaseModel):
+    reviews: list[ReviewThread]
+
+
+class ReviewDetailResponse(BaseModel):
+    review: ReviewThreadDetail
+
+
+class ReviewPostListResponse(BaseModel):
+    posts: list[ReviewPost]
+
+
+class CreateReviewPostRequest(BaseModel):
+    author_key: str
+    author_type: ReviewParticipantType
+    body: str
+    role_label: str | None = None
+    parent_post_id: UUID | None = None
+
+
+class ReviewRoundRequest(BaseModel):
+    mode: ReviewRoundMode = ReviewRoundMode.MODERATED_PANEL
+    participant_keys: list[str] = Field(default_factory=list)
+    execute_inline: bool = False
+
+
+class ReviewRoundResponse(BaseModel):
+    round: ReviewRound
+
+
+class ResolveReviewRequest(BaseModel):
+    status: ReviewStatus
+    resolution_summary: str
+    resolved_by: str = "system"

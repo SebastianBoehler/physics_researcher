@@ -54,9 +54,12 @@ class FailureClass(StrEnum):
 
 
 class SimulatorKind(StrEnum):
-    FAKE = "fake"
     LAMMPS = "lammps"
+    MEEP = "meep"
+    QUANTUM_ESPRESSO = "quantum_espresso"
     OPENMM = "openmm"
+    ELMER = "elmer"
+    DEVSIM = "devsim"
 
 
 class ArtifactType(StrEnum):
@@ -67,3 +70,33 @@ class ArtifactType(StrEnum):
     SUMMARY = "summary"
     REPORT = "report"
     MODEL = "model"
+    MANIFEST = "manifest"
+    METADATA = "metadata"
+    SCRIPT = "script"
+    ENVIRONMENT = "environment"
+
+
+class ReviewStatus(StrEnum):
+    OPEN = "open"
+    IN_REVIEW = "in_review"
+    CHANGES_REQUESTED = "changes_requested"
+    APPROVED = "approved"
+    RESOLVED = "resolved"
+
+
+class ReviewRoundMode(StrEnum):
+    SINGLE_PASS = "single_pass"
+    MODERATED_PANEL = "moderated_panel"
+
+
+class ReviewParticipantType(StrEnum):
+    HUMAN = "human"
+    AGENT = "agent"
+    SYSTEM = "system"
+
+
+class ReviewRoundStatus(StrEnum):
+    QUEUED = "queued"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"

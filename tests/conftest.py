@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from autolab.api.dependencies import get_campaign_service
+from autolab.api.dependencies import get_campaign_service, get_review_service
 from autolab.core.settings import get_settings
 
 
@@ -16,3 +16,4 @@ def reset_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setenv("AUTOLAB_EXECUTION_MODE", "sync")
     get_settings.cache_clear()
     get_campaign_service.cache_clear()
+    get_review_service.cache_clear()

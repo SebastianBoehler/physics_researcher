@@ -4,7 +4,12 @@ from autolab.storage.repositories import (
     ArtifactRepository,
     CampaignRepository,
     DecisionRepository,
+    OptimizerStateRepository,
+    ReviewRepository,
     RunRepository,
+    SummaryRepository,
+    SimulatorProvenanceRepository,
+    StageExecutionRepository,
 )
 
 __all__ = [
@@ -12,7 +17,12 @@ __all__ = [
     "ArtifactStore",
     "CampaignRepository",
     "DecisionRepository",
+    "OptimizerStateRepository",
+    "ReviewRepository",
     "RunRepository",
+    "SummaryRepository",
+    "SimulatorProvenanceRepository",
+    "StageExecutionRepository",
     "create_session_factory",
     "init_db",
 ]

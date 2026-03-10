@@ -62,7 +62,10 @@ services:
       dockerfile: infra/docker/Dockerfile
     command: uv run uvicorn autolab.api.main:app --host 0.0.0.0 --port 8000
     env_file:
-      - .env
+      - path: .env.example
+        required: true
+      - path: .env
+        required: false
     environment:
       AUTOLAB_DATABASE_URL: postgresql+psycopg://autolab:autolab@postgres:5432/autolab
       AUTOLAB_REDIS_URL: redis://redis:6379/0
@@ -95,7 +98,10 @@ services:
       dockerfile: infra/docker/Dockerfile
     command: uv run python -m autolab.worker.main
     env_file:
-      - .env
+      - path: .env.example
+        required: true
+      - path: .env
+        required: false
     environment:
       AUTOLAB_DATABASE_URL: postgresql+psycopg://autolab:autolab@postgres:5432/autolab
       AUTOLAB_REDIS_URL: redis://redis:6379/0
@@ -103,6 +109,40 @@ services:
       AUTOLAB_OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       AUTOLAB_RAY_ADDRESS: ray://ray-head:10001
       AUTOLAB_ARTIFACT_ROOT: /data/artifacts
+    volumes:
+      - .:/workspace
+      - ./artifacts:/data/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+      ray-head:
+        condition: service_started
+
+  worker-lammps:
+    profiles: ["lammps"]
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.lammps
+    command: uv run python -m autolab.worker.main
+    env_file:
+      - path: .env.example
+        required: true
+      - path: .env
+        required: false
+    environment:
+      AUTOLAB_DATABASE_URL: postgresql+psycopg://autolab:autolab@postgres:5432/autolab
+      AUTOLAB_REDIS_URL: redis://redis:6379/0
+      AUTOLAB_MLFLOW_TRACKING_URI: http://mlflow:5000
+      AUTOLAB_OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      AUTOLAB_RAY_ADDRESS: ray://ray-head:10001
+      AUTOLAB_ARTIFACT_ROOT: /data/artifacts
+      AUTOLAB_ENABLE_LAMMPS: "true"
+      AUTOLAB_LAMMPS_BIN: lmp
+      AUTOLAB_DEFAULT_SIMULATOR: lammps
     volumes:
       - .:/workspace
       - ./artifacts:/data/artifacts

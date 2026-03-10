@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from autolab.campaigns import ArtifactService, CampaignQueue, CampaignService, RunService
+from autolab.campaigns import (
+    ArtifactService,
+    CampaignQueue,
+    CampaignService,
+    ReviewService,
+    RunService,
+)
 from autolab.core.settings import Settings, get_settings
 from autolab.simulators import build_default_registry
 from autolab.storage import init_db
@@ -29,6 +35,13 @@ def get_artifact_service(
     campaign_service: CampaignService = Depends(get_campaign_service),
 ) -> ArtifactService:
     return ArtifactService(campaign_service)
+
+
+@lru_cache(maxsize=1)
+def get_review_service() -> ReviewService:
+    settings = get_settings()
+    init_db(settings)
+    return ReviewService(settings=settings)
 
 
 def get_queue(settings: Settings = Depends(get_settings)) -> CampaignQueue:

@@ -4,7 +4,7 @@ import time
 from uuid import UUID
 
 import ray
-from autolab.campaigns import CampaignQueue, CampaignService
+from autolab.campaigns import CampaignQueue, CampaignService, ReviewService
 from autolab.core.settings import Settings, get_settings
 from autolab.simulators import build_default_registry
 from autolab.storage import init_db
@@ -25,6 +25,32 @@ def process_campaign_step(
     return service.step_campaign(campaign_id=UUID(campaign_id))
 
 
+@ray.remote
+def process_review_round(
+    settings_payload: dict[str, object], review_id: str, review_round_id: str
+) -> dict[str, object]:
+    settings = Settings.model_validate(settings_payload)
+    init_db(settings)
+    service = ReviewService(settings=settings)
+    round_record = service.execute_round(review_id=UUID(review_id), round_id=UUID(review_round_id))
+    return round_record.model_dump(mode="json")
+
+
+def handle_queue_message(settings: Settings, payload: dict[str, str]) -> dict[str, object] | None:
+    event_type = payload.get("event_type")
+    if event_type == "step_campaign":
+        return ray.get(process_campaign_step.remote(settings.snapshot(), payload["campaign_id"]))
+    if event_type == "run_review_round":
+        return ray.get(
+            process_review_round.remote(
+                settings.snapshot(),
+                payload["review_id"],
+                payload["review_round_id"],
+            )
+        )
+    return None
+
+
 def main() -> None:
     setup_logging()
     settings = get_settings()
@@ -41,13 +67,11 @@ def main() -> None:
     while True:
         messages = queue.read(consumer_name="worker-1", block_ms=1000)
         for message_id, payload in messages:
-            if payload.get("event_type") != "step_campaign":
+            result = handle_queue_message(settings, payload)
+            if result is None:
                 queue.ack(message_id)
                 continue
-            result = ray.get(
-                process_campaign_step.remote(settings.snapshot(), payload["campaign_id"])
-            )
-            logger.info("campaign_step_processed", message_id=message_id, result=result)
+            logger.info("worker_event_processed", message_id=message_id, result=result)
             queue.ack(message_id)
         time.sleep(0.5)
 

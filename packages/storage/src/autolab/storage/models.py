@@ -32,6 +32,9 @@ class CampaignORM(Base):
     budget_batch_size: Mapped[int] = mapped_column(Integer)
     budget_max_failures: Mapped[int] = mapped_column(Integer)
     tags: Mapped[list[str]] = mapped_column(json_type(), default=list)
+    workflow_payload: Mapped[dict[str, Any] | None] = mapped_column(
+        "workflow", json_type(), nullable=True
+    )
     metadata_payload: Mapped[dict[str, Any]] = mapped_column("metadata", json_type(), default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
@@ -146,6 +149,30 @@ class ArtifactORM(Base):
     )
 
 
+class StageExecutionORM(Base):
+    __tablename__ = "stage_executions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    experiment_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    campaign_id: Mapped[str] = mapped_column(ForeignKey("campaigns.id", ondelete="CASCADE"))
+    candidate_id: Mapped[str] = mapped_column(ForeignKey("candidates.id", ondelete="CASCADE"))
+    simulator: Mapped[str] = mapped_column(String(64))
+    stage_name: Mapped[str] = mapped_column(String(128))
+    workdir_path: Mapped[str] = mapped_column(Text)
+    command: Mapped[list[str]] = mapped_column(json_type(), default=list)
+    environment: Mapped[dict[str, str]] = mapped_column(json_type(), default=dict)
+    input_files: Mapped[list[str]] = mapped_column(json_type(), default=list)
+    output_files: Mapped[list[str]] = mapped_column(json_type(), default=list)
+    log_files: Mapped[list[str]] = mapped_column(json_type(), default=list)
+    status: Mapped[str] = mapped_column(String(32))
+    exit_code: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    message: Mapped[str] = mapped_column(Text, default="")
+    simulator_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    metadata_payload: Mapped[dict[str, Any]] = mapped_column("metadata", json_type(), default=dict)
+
+
 class AgentDecisionORM(Base):
     __tablename__ = "agent_decisions"
 
@@ -214,6 +241,91 @@ class ConfigSnapshotORM(Base):
     campaign_id: Mapped[str] = mapped_column(ForeignKey("campaigns.id", ondelete="CASCADE"))
     sha256: Mapped[str] = mapped_column(String(64))
     payload: Mapped[dict[str, Any]] = mapped_column(json_type(), default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+
+
+class ReviewThreadORM(Base):
+    __tablename__ = "review_threads"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    campaign_id: Mapped[str] = mapped_column(ForeignKey("campaigns.id", ondelete="CASCADE"))
+    run_id: Mapped[str | None] = mapped_column(
+        ForeignKey("simulation_runs.id", ondelete="CASCADE"), nullable=True
+    )
+    title: Mapped[str] = mapped_column(String(255))
+    objective: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(32))
+    created_by: Mapped[str] = mapped_column(String(255))
+    resolution_summary: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+
+
+class ReviewParticipantORM(Base):
+    __tablename__ = "review_participants"
+    __table_args__ = (UniqueConstraint("review_id", "participant_key"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    review_id: Mapped[str] = mapped_column(ForeignKey("review_threads.id", ondelete="CASCADE"))
+    participant_key: Mapped[str] = mapped_column(String(128))
+    participant_type: Mapped[str] = mapped_column(String(32))
+    role_label: Mapped[str] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+
+
+class ReviewRoundORM(Base):
+    __tablename__ = "review_rounds"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    review_id: Mapped[str] = mapped_column(ForeignKey("review_threads.id", ondelete="CASCADE"))
+    mode: Mapped[str] = mapped_column(String(32))
+    status: Mapped[str] = mapped_column(String(32))
+    participant_keys: Mapped[list[str]] = mapped_column(json_type(), default=list)
+    recommendation: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    error_message: Mapped[str] = mapped_column(Text, default="")
+    metadata_payload: Mapped[dict[str, Any]] = mapped_column("metadata", json_type(), default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class ReviewPostORM(Base):
+    __tablename__ = "review_posts"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    review_id: Mapped[str] = mapped_column(ForeignKey("review_threads.id", ondelete="CASCADE"))
+    round_id: Mapped[str | None] = mapped_column(
+        ForeignKey("review_rounds.id", ondelete="SET NULL"), nullable=True
+    )
+    parent_post_id: Mapped[str | None] = mapped_column(
+        ForeignKey("review_posts.id", ondelete="SET NULL"), nullable=True
+    )
+    author_key: Mapped[str] = mapped_column(String(128))
+    author_type: Mapped[str] = mapped_column(String(32))
+    body: Mapped[str] = mapped_column(Text)
+    structured_payload: Mapped[dict[str, Any]] = mapped_column(json_type(), default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+
+
+class ReviewArtifactLinkORM(Base):
+    __tablename__ = "review_artifact_links"
+    __table_args__ = (UniqueConstraint("review_id", "artifact_id"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    review_id: Mapped[str] = mapped_column(ForeignKey("review_threads.id", ondelete="CASCADE"))
+    artifact_id: Mapped[str] = mapped_column(ForeignKey("artifacts.id", ondelete="CASCADE"))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )

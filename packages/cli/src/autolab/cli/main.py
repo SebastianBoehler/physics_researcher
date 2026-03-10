@@ -6,6 +6,7 @@ from pathlib import Path
 
 import httpx
 import typer
+from autolab.cli.benchmarks import run_benchmark_suite
 from autolab.core.settings import get_settings
 from rich import print
 
@@ -98,6 +99,122 @@ def inspect_run(run_id: str) -> None:
     print(response.json())
 
 
+@app.command("open-review")
+def open_review(
+    campaign_id: str,
+    title: str,
+    objective: str,
+    created_by: str,
+    run_id: str | None = None,
+    artifact_ids: list[str] | None = None,
+) -> None:
+    payload = {
+        "title": title,
+        "objective": objective,
+        "created_by": created_by,
+        "run_id": run_id,
+        "artifact_ids": artifact_ids or [],
+        "participants": [],
+    }
+    response = httpx.post(
+        f"{_base_url()}/campaigns/{campaign_id}/reviews",
+        json=payload,
+        headers=_headers(),
+        timeout=30.0,
+    )
+    response.raise_for_status()
+    print(response.json())
+
+
+@app.command("list-reviews")
+def list_reviews(campaign_id: str, run_id: str | None = None) -> None:
+    response = httpx.get(
+        f"{_base_url()}/campaigns/{campaign_id}/reviews",
+        params={"run_id": run_id} if run_id is not None else None,
+        headers=_headers(),
+        timeout=30.0,
+    )
+    response.raise_for_status()
+    print(response.json())
+
+
+@app.command("show-review")
+def show_review(review_id: str) -> None:
+    response = httpx.get(f"{_base_url()}/reviews/{review_id}", headers=_headers(), timeout=30.0)
+    response.raise_for_status()
+    print(response.json())
+
+
+@app.command("comment-review")
+def comment_review(
+    review_id: str,
+    author_key: str,
+    body: str,
+    author_type: str = "human",
+    role_label: str | None = None,
+    parent_post_id: str | None = None,
+) -> None:
+    payload = {
+        "author_key": author_key,
+        "author_type": author_type,
+        "body": body,
+        "role_label": role_label,
+        "parent_post_id": parent_post_id,
+    }
+    response = httpx.post(
+        f"{_base_url()}/reviews/{review_id}/posts",
+        json=payload,
+        headers=_headers(),
+        timeout=30.0,
+    )
+    response.raise_for_status()
+    print(response.json())
+
+
+@app.command("run-review-round")
+def run_review_round(
+    review_id: str,
+    mode: str = "moderated_panel",
+    participant_keys: list[str] | None = None,
+    execute_inline: bool = False,
+) -> None:
+    payload = {
+        "mode": mode,
+        "participant_keys": participant_keys or [],
+        "execute_inline": execute_inline,
+    }
+    response = httpx.post(
+        f"{_base_url()}/reviews/{review_id}/rounds",
+        json=payload,
+        headers=_headers(),
+        timeout=60.0,
+    )
+    response.raise_for_status()
+    print(response.json())
+
+
+@app.command("resolve-review")
+def resolve_review(
+    review_id: str,
+    status: str,
+    resolution_summary: str,
+    resolved_by: str = "system",
+) -> None:
+    payload = {
+        "status": status,
+        "resolution_summary": resolution_summary,
+        "resolved_by": resolved_by,
+    }
+    response = httpx.post(
+        f"{_base_url()}/reviews/{review_id}/resolve",
+        json=payload,
+        headers=_headers(),
+        timeout=30.0,
+    )
+    response.raise_for_status()
+    print(response.json())
+
+
 @app.command("seed-demo")
 def seed_demo() -> None:
     payload = json.loads(Path("examples/campaigns/demo_campaign.json").read_text(encoding="utf-8"))
@@ -116,7 +233,11 @@ def seed_demo() -> None:
 
 @app.command("test-sim")
 def test_sim() -> None:
-    payload = json.loads(Path("examples/campaigns/demo_campaign.json").read_text(encoding="utf-8"))
+    payload = json.loads(
+        Path("examples/campaigns/cross_simulator_transfer_verification.json").read_text(
+            encoding="utf-8"
+        )
+    )
     response = httpx.post(
         f"{_base_url()}/campaigns", json=payload, headers=_headers(), timeout=30.0
     )
@@ -135,3 +256,28 @@ def test_sim() -> None:
     )
     result.raise_for_status()
     print(result.json())
+
+
+@app.command("run-benchmark")
+def run_benchmark(
+    manifest_path: Path = Path("benchmarks/meep_inverse_design/benchmark.json"),
+    execute_inline: bool = True,
+    max_steps: int | None = None,
+    output_path: Path | None = None,
+    max_parallel_campaigns: int | None = None,
+) -> None:
+    settings = get_settings()
+    report = run_benchmark_suite(
+        manifest_path=manifest_path,
+        base_url=_base_url(),
+        headers=_headers(),
+        execute_inline=execute_inline,
+        max_steps=max_steps,
+        output_path=output_path,
+        max_parallel_campaigns=(
+            max_parallel_campaigns
+            if max_parallel_campaigns is not None
+            else settings.app.max_parallel_benchmark_campaigns
+        ),
+    )
+    print(report)
