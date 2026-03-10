@@ -1,0 +1,78 @@
+{
+  "result": {
+    "mode": "literature_research",
+    "topic": "Quantum sensor stability",
+    "papers": [
+      {
+        "paper_id": "2401.12345",
+        "arxiv_id": "2401.12345",
+        "title": "Quantum Sensor Stability",
+        "abstract": "This study shows quantum sensor stability improves accuracy.",
+        "authors": [{ "name": "Alice Example" }],
+        "year": 2024,
+        "url": "https://arxiv.org/abs/2401.12345",
+        "pdf_url": "https://arxiv.org/pdf/2401.12345",
+        "categories": ["quant-ph"],
+        "notes": "Review the literature and compare papers.",
+        "metadata_quality": "complete",
+        "flags": [],
+        "core_claims": [
+          {
+            "paper_id": "2401.12345",
+            "statement": "This study shows quantum sensor stability improves accuracy",
+            "evidence": "This study shows quantum sensor stability improves accuracy.",
+            "evidence_type": "stated",
+            "confidence": "medium"
+          }
+        ],
+        "methods": [],
+        "assumptions": []
+      }
+    ],
+    "intake": {
+      "papers": [
+        {
+          "paper_id": "2401.12345",
+          "author_summary": "Alice Example",
+          "year": 2024,
+          "core_claim": "This study shows quantum sensor stability improves accuracy"
+        }
+      ],
+      "clusters": [],
+      "warnings": ["Only one paper was available, so confidence is limited."],
+      "limited_confidence": true
+    },
+    "contradictions": [],
+    "citation_chains": [],
+    "gaps": [],
+    "methodology_audit": {
+      "method_groups": [],
+      "dominant_methods": [],
+      "underused_methods": [],
+      "method_sensitive_conclusions": []
+    },
+    "synthesis": {
+      "collective_beliefs": ["Single-paper evidence suggests: This study shows quantum sensor stability improves accuracy"],
+      "contested_questions": [],
+      "shared_assumptions": [],
+      "promising_next_steps": [],
+      "evidence_note": "Synthesis is constrained to the provided arXiv-centered paper set and does not use an external citation corpus.",
+      "confidence": "low"
+    },
+    "assumptions": [],
+    "knowledge_map": {
+      "central_claim": "Single-paper evidence suggests: This study shows quantum sensor stability improves accuracy",
+      "supporting_pillars": ["Single-paper evidence suggests: This study shows quantum sensor stability improves accuracy"],
+      "contested_zones": [],
+      "frontier_questions": []
+    },
+    "so_what": {
+      "proven": "Preliminary evidence suggests: Single-paper evidence suggests: This study shows quantum sensor stability improves accuracy",
+      "unknown": "Important open questions remain under-specified.",
+      "matters": "This matters for Quantum sensor stability because downstream modeling, experimentation, and resource allocation depend on which parts of the evidence are robust."
+    },
+    "stage_status": [],
+    "errors": [],
+    "markdown_rendering": "# Literature Research: Quantum sensor stability"
+  }
+}

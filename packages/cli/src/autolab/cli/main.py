@@ -99,6 +99,32 @@ def inspect_run(run_id: str) -> None:
     print(response.json())
 
 
+@app.command("research-literature")
+def research_literature(
+    topic: str,
+    paper: list[str] | None = None,
+    notes: str | None = None,
+    include_markdown: bool = True,
+) -> None:
+    payload = {
+        "topic": topic,
+        "papers": [
+            {"arxiv_id": candidate} if "://" not in candidate else {"url": candidate}
+            for candidate in (paper or [])
+        ],
+        "notes": notes,
+        "include_markdown": include_markdown,
+    }
+    response = httpx.post(
+        f"{_base_url()}/literature-research",
+        json=payload,
+        headers=_headers(),
+        timeout=60.0,
+    )
+    response.raise_for_status()
+    print(response.json())
+
+
 @app.command("open-review")
 def open_review(
     campaign_id: str,

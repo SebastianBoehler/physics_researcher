@@ -74,6 +74,15 @@ class ModelProviderConfig(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="AUTOLAB_MODEL_", extra="ignore")
 
 
+class LiteratureConfig(BaseSettings):
+    arxiv_api_url: str = "https://export.arxiv.org/api/query"
+    user_agent: str = "autolab-literature/0.1"
+    timeout_seconds: float = 15.0
+    max_results_per_query: int = 5
+
+    model_config = SettingsConfigDict(env_prefix="AUTOLAB_LITERATURE_", extra="ignore")
+
+
 class Settings(BaseSettings):
     app: AppConfig = Field(default_factory=AppConfig)
     database: DatabaseConfig = Field(default_factory=DatabaseConfig)
@@ -82,6 +91,7 @@ class Settings(BaseSettings):
     mlflow: MlflowConfig = Field(default_factory=MlflowConfig)
     otel: OTelConfig = Field(default_factory=OTelConfig)
     auth: AuthConfig = Field(default_factory=AuthConfig)
+    literature: LiteratureConfig = Field(default_factory=LiteratureConfig)
     simulators: SimulatorConfig = Field(default_factory=SimulatorConfig)
     model_provider: ModelProviderConfig = Field(default_factory=ModelProviderConfig)
 

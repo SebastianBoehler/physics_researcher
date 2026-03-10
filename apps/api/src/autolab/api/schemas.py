@@ -3,9 +3,11 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
+from autolab.agents import LiteraturePaperInput, LiteratureResearchResult
 from autolab.core.enums import (
     CampaignMode,
     CampaignStatus,
+    ResearchMode,
     ReviewParticipantType,
     ReviewRoundMode,
     ReviewStatus,
@@ -119,3 +121,15 @@ class ResolveReviewRequest(BaseModel):
     status: ReviewStatus
     resolution_summary: str
     resolved_by: str = "system"
+
+
+class LiteratureResearchRequest(BaseModel):
+    mode: ResearchMode | None = None
+    topic: str
+    papers: list[LiteraturePaperInput] = Field(default_factory=list)
+    notes: str | None = None
+    include_markdown: bool = True
+
+
+class LiteratureResearchResponse(BaseModel):
+    result: LiteratureResearchResult

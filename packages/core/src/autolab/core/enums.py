@@ -100,3 +100,7 @@ class ReviewRoundStatus(StrEnum):
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
+
+
+class ResearchMode(StrEnum):
+    LITERATURE_RESEARCH = "literature_research"

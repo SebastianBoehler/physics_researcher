@@ -5,10 +5,17 @@ from contextlib import asynccontextmanager
 from uuid import UUID
 
 import uvicorn
-from autolab.agents import ReviewRuntimeUnavailableError
+from autolab.agents import (
+    LiteratureResearchRequest as AgentLiteratureResearchRequest,
+)
+from autolab.agents import (
+    LiteratureResearchService,
+    ReviewRuntimeUnavailableError,
+)
 from autolab.api.dependencies import (
     get_artifact_service,
     get_campaign_service,
+    get_literature_research_service,
     get_queue,
     get_review_service,
     get_run_service,
@@ -20,6 +27,8 @@ from autolab.api.schemas import (
     CreateReviewPostRequest,
     CreateReviewRequest,
     HealthResponse,
+    LiteratureResearchRequest,
+    LiteratureResearchResponse,
     ResolveReviewRequest,
     ReviewDetailResponse,
     ReviewListResponse,
@@ -71,6 +80,21 @@ def health() -> HealthResponse:
             "mlflow": "configured",
         },
     )
+
+
+@app.post("/literature-research", response_model=LiteratureResearchResponse)
+def run_literature_research(
+    request: LiteratureResearchRequest,
+    _: str = Depends(require_admin_token),
+    service: LiteratureResearchService = Depends(get_literature_research_service),
+) -> LiteratureResearchResponse:
+    try:
+        result = service.run(
+            AgentLiteratureResearchRequest.model_validate(request.model_dump(mode="json"))
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    return LiteratureResearchResponse(result=result)
 
 
 @app.post("/campaigns", response_model=CampaignResponse, status_code=status.HTTP_201_CREATED)

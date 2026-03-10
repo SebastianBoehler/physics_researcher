@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from autolab.agents import LiteratureResearchService
 from autolab.campaigns import (
     ArtifactService,
     CampaignQueue,
@@ -42,6 +43,12 @@ def get_review_service() -> ReviewService:
     settings = get_settings()
     init_db(settings)
     return ReviewService(settings=settings)
+
+
+@lru_cache(maxsize=1)
+def get_literature_research_service() -> LiteratureResearchService:
+    settings = get_settings()
+    return LiteratureResearchService(settings=settings)
 
 
 def get_queue(settings: Settings = Depends(get_settings)) -> CampaignQueue:

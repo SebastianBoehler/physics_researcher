@@ -8,6 +8,7 @@ dependencies = [
   "autolab-skills",
   "autolab-telemetry",
   "google-adk>=1.0.0",
+  "httpx>=0.28.1",
 ]
 
 [tool.uv.sources]
