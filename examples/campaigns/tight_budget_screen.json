@@ -1,0 +1,53 @@
+{
+  "name": "tight-budget-screen",
+  "description": "Very small-budget screen to benchmark early-step candidate quality.",
+  "mode": "materials_discovery",
+  "objectives": [
+    {
+      "name": "maximize_conductivity",
+      "metric_key": "conductivity",
+      "direction": "maximize",
+      "weight": 1.0
+    }
+  ],
+  "constraints": [
+    {
+      "name": "cost_threshold",
+      "metric_key": "cost",
+      "operator": "lt",
+      "threshold": 56.0
+    },
+    {
+      "name": "stability_threshold",
+      "metric_key": "stability",
+      "operator": "gt",
+      "threshold": 0.68
+    }
+  ],
+  "search_space": {
+    "dimensions": [
+      { "name": "dopant_ratio", "kind": "continuous", "lower": 0.08, "upper": 0.45, "choices": [] },
+      {
+        "name": "anneal_temperature",
+        "kind": "continuous",
+        "lower": 470.0,
+        "upper": 740.0,
+        "choices": []
+      },
+      { "name": "pressure", "kind": "continuous", "lower": 0.8, "upper": 3.2, "choices": [] },
+      { "name": "synthesis_time", "kind": "continuous", "lower": 1.0, "upper": 5.0, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 4,
+    "batch_size": 2,
+    "max_failures": 2
+  },
+  "simulator": "fake",
+  "seed": 11,
+  "tags": ["benchmark", "tight-budget", "screening"],
+  "metadata": {
+    "operator_prompt": "Use this to compare how strong the first two batches are under a strict run budget.",
+    "analysis_focus": "sample efficiency"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "name": "process-window-tuning",
+  "description": "Process optimization campaign focused on tuning anneal and pressure windows.",
+  "mode": "process_optimization",
+  "objectives": [
+    {
+      "name": "maximize_conductivity",
+      "metric_key": "conductivity",
+      "direction": "maximize",
+      "weight": 1.0
+    }
+  ],
+  "constraints": [
+    {
+      "name": "cost_threshold",
+      "metric_key": "cost",
+      "operator": "lt",
+      "threshold": 52.0
+    },
+    {
+      "name": "stability_threshold",
+      "metric_key": "stability",
+      "operator": "gt",
+      "threshold": 0.72
+    }
+  ],
+  "search_space": {
+    "dimensions": [
+      { "name": "dopant_ratio", "kind": "continuous", "lower": 0.2, "upper": 0.4, "choices": [] },
+      {
+        "name": "anneal_temperature",
+        "kind": "continuous",
+        "lower": 540.0,
+        "upper": 700.0,
+        "choices": []
+      },
+      { "name": "pressure", "kind": "continuous", "lower": 1.0, "upper": 2.8, "choices": [] },
+      { "name": "synthesis_time", "kind": "continuous", "lower": 1.0, "upper": 3.0, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 8,
+    "batch_size": 2,
+    "max_failures": 2
+  },
+  "simulator": "fake",
+  "seed": 101,
+  "tags": ["process-optimization", "window-tuning"],
+  "metadata": {
+    "operator_prompt": "Treat this as process optimization and report the best operating window, not just the best point.",
+    "analysis_focus": "process regime summary"
+  }
+}

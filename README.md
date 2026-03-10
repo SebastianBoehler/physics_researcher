@@ -22,6 +22,7 @@
 - `packages/storage`: SQLAlchemy models, repositories, artifact store, and Alembic setup
 - `packages/telemetry`: structured logging and tracing helpers
 - `examples`: seeded demo campaign, config samples, and notebook scaffold
+- `examples/prompts`: runnable problem statements and iteration prompts
 - `docs`: ADRs, architecture notes, and operator playbooks
 
 More detail is in [docs/architecture/overview.md](docs/architecture/overview.md) and [docs/adr/0001-orchestration-and-simulator-boundary.md](docs/adr/0001-orchestration-and-simulator-boundary.md).
@@ -78,6 +79,16 @@ make test
 uv run autolab --help
 npm run format:check
 ```
+
+## Example problems to try
+
+Start with the prompt and spec library in [examples/prompts/experiment_prompts.md](examples/prompts/experiment_prompts.md).
+
+The most useful first runs are:
+
+- [baseline_conductivity.json](examples/campaigns/baseline_conductivity.json)
+- [cautious_feasible_search.json](examples/campaigns/cautious_feasible_search.json)
+- [process_window_tuning.json](examples/campaigns/process_window_tuning.json)
 
 ## Local stack
 
