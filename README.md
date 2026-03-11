@@ -133,6 +133,9 @@ The most useful first runs are:
 - [openmm_protein_relaxation.json](examples/campaigns/openmm_protein_relaxation.json)
 - [thermoelectric_sim_to_measurement_loop.json](examples/campaigns/thermoelectric_sim_to_measurement_loop.json)
 - [meep_waveguide_inverse_screen.json](examples/campaigns/meep_waveguide_inverse_screen.json)
+- [meep_broadband_mode_converter.json](examples/campaigns/meep_broadband_mode_converter.json)
+- [meep_splitter_inverse_screen.json](examples/campaigns/meep_splitter_inverse_screen.json)
+- [meep_demux_inverse_screen.json](examples/campaigns/meep_demux_inverse_screen.json)
 - [qe_to_meep_photonic_screen.json](examples/campaigns/qe_to_meep_photonic_screen.json)
 - [qe_to_lammps_forcefield_bootstrap.json](examples/campaigns/qe_to_lammps_forcefield_bootstrap.json)
 - [lammps_to_elmer_multiscale_screen.json](examples/campaigns/lammps_to_elmer_multiscale_screen.json)
@@ -163,6 +166,25 @@ uv run autolab run-benchmark --manifest-path benchmarks/meep_inverse_design/benc
 ```
 
 This creates campaigns, steps them through the existing API, and writes a report to `artifacts/benchmarks/meep-inverse-design-v1/report.json`.
+
+For a broader photonic device benchmark, the repository also includes a multi-device MEEP suite:
+
+- benchmark manifest: [benchmark.json](benchmarks/meep_photonic_devices/benchmark.json)
+- benchmark note: [meep_photonic_devices.md](docs/benchmarks/meep_photonic_devices.md)
+
+Run it with:
+
+```bash
+AUTOLAB_ENABLE_MEEP=true uv run autolab run-benchmark --manifest-path benchmarks/meep_photonic_devices/benchmark.json --execute-inline
+```
+
+This benchmark evaluates a broadband mode-converter task, a two-port splitter task, and a two-port demultiplexer task under a shared `device_score` metric.
+
+To regenerate the comparison figures between the initial suite and the latest refined rerun:
+
+```bash
+uv run python scripts/generate_meep_photonic_benchmark_plots.py
+```
 
 For a benchmark you can run more easily on a standard Python host, use the OpenMM Lennard-Jones pair suite:
 

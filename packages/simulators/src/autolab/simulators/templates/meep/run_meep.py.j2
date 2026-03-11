@@ -2,16 +2,98 @@ import json
 
 import meep as mp
 
+device_kind = "{{ device_kind | default('waveguide_block', true) }}"
+route_targets = {
+    "low": "{{ route_low_port | default('upper', true) }}",
+    "high": "{{ route_high_port | default('lower', true) }}",
+}
 resolution = {{ resolution }}
 cell = mp.Vector3({{ sx }}, {{ sy }}, 0)
 boundary_layers = [mp.PML({{ dpml }})]
-geometry = [
-    mp.Block(
-        size=mp.Vector3({{ block_x }}, {{ block_y }}, mp.inf),
-        center=mp.Vector3(),
-        material=mp.Medium(index={{ refractive_index }}),
+core = mp.Medium(index={{ refractive_index }})
+cladding = mp.Medium(index={{ cladding_index | default(1.0, true) }})
+geometry = []
+if device_kind == "waveguide_block":
+    geometry.append(
+        mp.Block(
+            size=mp.Vector3({{ block_x }}, {{ block_y }}, mp.inf),
+            center=mp.Vector3(
+                {{ block_center_x | default(0.0, true) }},
+                {{ block_center_y | default(0.0, true) }},
+                0,
+            ),
+            material=core,
+        )
     )
-]
+else:
+    geometry.extend(
+        [
+            mp.Block(
+                size=mp.Vector3(
+                    {{ input_length | default(4.0, true) }},
+                    {{ input_width | default(1.0, true) }},
+                    mp.inf,
+                ),
+                center=mp.Vector3(
+                    -0.5 * {{ sx }} + {{ dpml }} + 0.5 * {{ input_length | default(4.0, true) }},
+                    0,
+                    0,
+                ),
+                material=core,
+            ),
+            mp.Block(
+                size=mp.Vector3(
+                    {{ output_length | default(4.0, true) }},
+                    {{ output_width | default(1.0, true) }},
+                    mp.inf,
+                ),
+                center=mp.Vector3(
+                    0.5 * {{ sx }} - {{ dpml }} - 0.5 * {{ output_length | default(4.0, true) }},
+                    0.5 * {{ arm_separation | default(3.0, true) }},
+                    0,
+                ),
+                material=core,
+            ),
+            mp.Block(
+                size=mp.Vector3(
+                    {{ output_length | default(4.0, true) }},
+                    {{ output_width | default(1.0, true) }},
+                    mp.inf,
+                ),
+                center=mp.Vector3(
+                    0.5 * {{ sx }} - {{ dpml }} - 0.5 * {{ output_length | default(4.0, true) }},
+                    -0.5 * {{ arm_separation | default(3.0, true) }},
+                    0,
+                ),
+                material=core,
+            ),
+            mp.Block(
+                size=mp.Vector3({{ block_x }}, {{ block_y }}, mp.inf),
+                center=mp.Vector3(
+                    {{ block_center_x | default(0.0, true) }},
+                    {{ block_center_y | default(0.0, true) }},
+                    0,
+                ),
+                material=core,
+            ),
+        ]
+    )
+if {{ block2_x | default(0.0, true) }} > 0 and {{ block2_y | default(0.0, true) }} > 0:
+    geometry.append(
+        mp.Block(
+            size=mp.Vector3(
+                {{ block2_x | default(0.0, true) }},
+                {{ block2_y | default(0.0, true) }},
+                mp.inf,
+            ),
+            center=mp.Vector3(
+                {{ block2_center_x | default(0.0, true) }},
+                {{ block2_center_y | default(0.0, true) }},
+                0,
+            ),
+            material=core,
+        )
+    )
 sources = [
     mp.Source(
         mp.GaussianSource({{ fcen }}, fwidth={{ df }}),
@@ -25,31 +107,68 @@ sim = mp.Simulation(
     geometry=geometry,
     sources=sources,
     resolution=resolution,
+    default_material=cladding,
 )
-refl = sim.add_flux(
+reflection_monitor = sim.add_flux(
     {{ fcen }},
     {{ df }},
     {{ nfreq }},
     mp.FluxRegion(center=mp.Vector3(-0.25 * {{ sx }}, 0, 0), size=mp.Vector3(0, {{ sy }} - 2 * {{ dpml }}, 0)),
 )
-tran = sim.add_flux(
-    {{ fcen }},
-    {{ df }},
-    {{ nfreq }},
-    mp.FluxRegion(center=mp.Vector3(0.25 * {{ sx }}, 0, 0), size=mp.Vector3(0, {{ sy }} - 2 * {{ dpml }}, 0)),
-)
+if device_kind == "waveguide_block":
+    transmission_monitor = sim.add_flux(
+        {{ fcen }},
+        {{ df }},
+        {{ nfreq }},
+        mp.FluxRegion(center=mp.Vector3(0.25 * {{ sx }}, 0, 0), size=mp.Vector3(0, {{ sy }} - 2 * {{ dpml }}, 0)),
+    )
+else:
+    upper_monitor = sim.add_flux(
+        {{ fcen }},
+        {{ df }},
+        {{ nfreq }},
+        mp.FluxRegion(
+            center=mp.Vector3(
+                0.5 * {{ sx }} - {{ dpml }} - 0.75,
+                0.5 * {{ arm_separation | default(3.0, true) }},
+                0,
+            ),
+            size=mp.Vector3(0, 1.5 * {{ output_width | default(1.0, true) }}, 0),
+        ),
+    )
+    lower_monitor = sim.add_flux(
+        {{ fcen }},
+        {{ df }},
+        {{ nfreq }},
+        mp.FluxRegion(
+            center=mp.Vector3(
+                0.5 * {{ sx }} - {{ dpml }} - 0.75,
+                -0.5 * {{ arm_separation | default(3.0, true) }},
+                0,
+            ),
+            size=mp.Vector3(0, 1.5 * {{ output_width | default(1.0, true) }}, 0),
+        ),
+    )
 sim.run(until={{ until }})
 
-frequencies = list(mp.get_flux_freqs(tran))
-transmission = [float(value) for value in mp.get_fluxes(tran)]
-reflection = [float(value) for value in mp.get_fluxes(refl)]
+reference_monitor = transmission_monitor if device_kind == "waveguide_block" else upper_monitor
+frequencies = list(mp.get_flux_freqs(reference_monitor))
+monitors = {
+    "reflection": [float(value) for value in mp.get_fluxes(reflection_monitor)],
+}
+if device_kind == "waveguide_block":
+    monitors["transmission"] = [float(value) for value in mp.get_fluxes(transmission_monitor)]
+else:
+    monitors["upper"] = [float(value) for value in mp.get_fluxes(upper_monitor)]
+    monitors["lower"] = [float(value) for value in mp.get_fluxes(lower_monitor)]
 
 with open("meep_results.json", "w", encoding="utf-8") as handle:
     json.dump(
         {
+            "device_kind": device_kind,
             "frequencies": frequencies,
-            "transmission": transmission,
-            "reflection": reflection,
+            "route_targets": route_targets,
+            "monitors": monitors,
         },
         handle,
         indent=2,

@@ -1,0 +1,27 @@
+{
+  "name": "meep-photonic-devices-v1",
+  "description": "Paper-oriented benchmark suite for block-based photonic inverse design across mode-conversion, splitting, and spectral-routing tasks.",
+  "paper_hypothesis": "An autonomous, provenance-aware MEEP workflow can optimize distinct photonic device classes with task-specific figures of merit while preserving reproducibility artifacts.",
+  "primary_metric": "device_score",
+  "campaigns": [
+    "benchmarks/meep_photonic_devices/campaigns/broadband_mode_converter.json",
+    "benchmarks/meep_photonic_devices/campaigns/splitter_screen.json",
+    "benchmarks/meep_photonic_devices/campaigns/demux_screen.json"
+  ],
+  "evaluation": {
+    "report_fields": [
+      "best_metric",
+      "mean_metric",
+      "succeeded_runs",
+      "failed_runs",
+      "timed_out_runs",
+      "artifact_coverage",
+      "workflow_stage_coverage"
+    ],
+    "baseline_notes": [
+      "Compare against random search under the same run budget.",
+      "Record device-class-specific secondary metrics such as split balance and demux score.",
+      "Treat these as block-parameter screening tasks rather than full adjoint topology optimization."
+    ]
+  }
+}

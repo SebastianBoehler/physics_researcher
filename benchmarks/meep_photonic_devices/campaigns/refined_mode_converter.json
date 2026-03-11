@@ -1,0 +1,93 @@
+{
+  "name": "benchmark-meep-broadband-mode-converter-refined",
+  "description": "Refined longer-run benchmark for broadband single-output photonic screening.",
+  "mode": "materials_discovery",
+  "objectives": [
+    {
+      "name": "maximize_device_score",
+      "metric_key": "device_score",
+      "direction": "maximize",
+      "weight": 1.0
+    }
+  ],
+  "constraints": [],
+  "search_space": {
+    "dimensions": [
+      { "name": "block_x", "kind": "continuous", "lower": 1.5, "upper": 2.6, "choices": [] },
+      { "name": "block_y", "kind": "continuous", "lower": 4.2, "upper": 5.4, "choices": [] },
+      { "name": "refractive_index", "kind": "continuous", "lower": 2.2, "upper": 2.8, "choices": [] },
+      { "name": "block_center_x", "kind": "continuous", "lower": -0.5, "upper": 0.5, "choices": [] },
+      { "name": "block_center_y", "kind": "continuous", "lower": -0.4, "upper": 0.4, "choices": [] },
+      { "name": "block2_x", "kind": "continuous", "lower": 0.0, "upper": 1.8, "choices": [] },
+      { "name": "block2_y", "kind": "continuous", "lower": 0.0, "upper": 1.8, "choices": [] },
+      { "name": "block2_center_x", "kind": "continuous", "lower": -1.2, "upper": 1.2, "choices": [] },
+      { "name": "block2_center_y", "kind": "continuous", "lower": -1.2, "upper": 1.2, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 8,
+    "batch_size": 1,
+    "max_failures": 3
+  },
+  "simulator": "meep",
+  "workflow": {
+    "name": "benchmark-meep-broadband-mode-converter-refined",
+    "stages": [
+      {
+        "name": "meep",
+        "simulator": "meep",
+        "task": {
+          "name": "meep_flux_scan",
+          "simulator": "meep",
+          "parameters": {
+            "device_kind": "waveguide_block",
+            "sx": 18.0,
+            "sy": 9.0,
+            "block_x": 1.9,
+            "block_y": 4.9,
+            "block_center_x": 0.0,
+            "block_center_y": 0.0,
+            "block2_x": 0.0,
+            "block2_y": 0.0,
+            "block2_center_x": 0.0,
+            "block2_center_y": 0.0,
+            "refractive_index": 2.4,
+            "resolution": 24,
+            "dpml": 1.0,
+            "fcen": 0.17,
+            "df": 0.08,
+            "nfreq": 41,
+            "until": 80
+          },
+          "units": {
+            "sx": "um",
+            "sy": "um",
+            "block_x": "um",
+            "block_y": "um",
+            "block_center_x": "um",
+            "block_center_y": "um"
+            ,
+            "block2_x": "um",
+            "block2_y": "um",
+            "block2_center_x": "um",
+            "block2_center_y": "um"
+          },
+          "expected_outputs": ["meep_results.json", "stdout.log", "stderr.log"]
+        },
+        "depends_on": [],
+        "mapping_id": null,
+        "metadata": {}
+      }
+    ],
+    "metadata": {
+      "benchmark_family": "meep_photonic_devices_refined",
+      "difficulty": "medium"
+    }
+  },
+  "seed": 401,
+  "tags": ["benchmark", "meep", "photonics", "mode-converter", "refined"],
+  "metadata": {
+    "benchmark_id": "meep-mode-converter-refined",
+    "analysis_focus": "lower reflection in a narrowed broadband search region"
+  }
+}

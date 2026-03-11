@@ -1,0 +1,27 @@
+{
+  "name": "meep-photonic-devices-refined-v1",
+  "description": "Refined photonic-device benchmark with tighter search spaces, asymmetric block offsets, and longer budgets for more serious MEEP screening.",
+  "paper_hypothesis": "Narrowing the search around empirically better regions and allowing asymmetric scatterers improves the quality of autonomous block-based photonic device optimization.",
+  "primary_metric": "device_score",
+  "campaigns": [
+    "benchmarks/meep_photonic_devices/campaigns/refined_mode_converter.json",
+    "benchmarks/meep_photonic_devices/campaigns/refined_splitter.json",
+    "benchmarks/meep_photonic_devices/campaigns/refined_demux.json"
+  ],
+  "evaluation": {
+    "report_fields": [
+      "best_metric",
+      "mean_metric",
+      "succeeded_runs",
+      "failed_runs",
+      "timed_out_runs",
+      "artifact_coverage",
+      "workflow_stage_coverage"
+    ],
+    "baseline_notes": [
+      "This refined suite starts from the first-pass benchmark and narrows around lower-reflection regions.",
+      "The splitter and demux tasks add block-center offsets to break the strict vertical symmetry of the original geometry family.",
+      "These remain compact block-parameter studies, not adjoint topology optimization."
+    ]
+  }
+}

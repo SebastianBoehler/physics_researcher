@@ -123,7 +123,7 @@ class WorkflowBackedSimulator(SimulatorBackend, ABC):
             simulator_version=None,
             stage_name=stage.name,
             workflow_name=workflow_value.name,
-            parameters=stage.task.parameters,
+            parameters={**stage.task.parameters, **candidate.values},
             units=stage.task.units,
             material=stage.task.material,
             geometry=stage.task.geometry,

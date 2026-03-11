@@ -1,0 +1,95 @@
+{
+  "name": "meep-splitter-inverse-screen",
+  "description": "Two-port photonic splitter screen that trades throughput against balance.",
+  "mode": "materials_discovery",
+  "objectives": [
+    {
+      "name": "maximize_device_score",
+      "metric_key": "device_score",
+      "direction": "maximize",
+      "weight": 1.0
+    },
+    {
+      "name": "maximize_total_output_mean",
+      "metric_key": "total_output_mean",
+      "direction": "maximize",
+      "weight": 0.35
+    },
+    {
+      "name": "maximize_split_balance",
+      "metric_key": "split_balance",
+      "direction": "maximize",
+      "weight": 0.25
+    }
+  ],
+  "constraints": [],
+  "search_space": {
+    "dimensions": [
+      { "name": "block_x", "kind": "continuous", "lower": 2.0, "upper": 5.0, "choices": [] },
+      { "name": "block_y", "kind": "continuous", "lower": 3.0, "upper": 6.5, "choices": [] },
+      { "name": "refractive_index", "kind": "continuous", "lower": 2.4, "upper": 3.8, "choices": [] },
+      { "name": "arm_separation", "kind": "continuous", "lower": 2.2, "upper": 4.2, "choices": [] },
+      { "name": "output_width", "kind": "continuous", "lower": 0.6, "upper": 1.4, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 8,
+    "batch_size": 1,
+    "max_failures": 3
+  },
+  "simulator": "meep",
+  "workflow": {
+    "name": "meep-splitter-inverse-screen",
+    "stages": [
+      {
+        "name": "meep",
+        "simulator": "meep",
+        "task": {
+          "name": "meep_flux_scan",
+          "simulator": "meep",
+          "parameters": {
+            "device_kind": "splitter",
+            "sx": 20.0,
+            "sy": 10.0,
+            "block_x": 3.0,
+            "block_y": 4.8,
+            "refractive_index": 3.2,
+            "input_width": 1.0,
+            "output_width": 1.0,
+            "arm_separation": 3.0,
+            "input_length": 5.0,
+            "output_length": 5.0,
+            "resolution": 18,
+            "dpml": 1.0,
+            "fcen": 0.15,
+            "df": 0.1,
+            "nfreq": 31,
+            "until": 70
+          },
+          "units": {
+            "sx": "um",
+            "sy": "um",
+            "block_x": "um",
+            "block_y": "um",
+            "arm_separation": "um",
+            "output_width": "um"
+          },
+          "expected_outputs": ["meep_results.json", "stdout.log", "stderr.log"]
+        },
+        "depends_on": [],
+        "mapping_id": null,
+        "metadata": {}
+      }
+    ],
+    "metadata": {
+      "benchmark_family": "meep_photonic_devices",
+      "device_class": "splitter"
+    }
+  },
+  "seed": 223,
+  "tags": ["meep", "photonics", "inverse-design", "splitter"],
+  "metadata": {
+    "operator_prompt": "Optimize a two-port photonic splitter while keeping the monitor spectra and generated scripts auditable.",
+    "analysis_focus": "throughput and split balance"
+  }
+}
