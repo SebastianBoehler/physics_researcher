@@ -36,6 +36,19 @@ AUTOLAB_ENABLE_OPENMM=true uv run autolab run-benchmark benchmarks/openmm_lj13_c
 
 This writes a report to `artifacts/benchmarks/openmm-lj13-cluster-v1/report.json`.
 
+To compare optimizer baselines on the same raw `LJ13` landscape, run:
+
+```bash
+AUTOLAB_ENABLE_OPENMM=true uv run autolab run-benchmark --manifest-path benchmarks/openmm_lj13_baselines/benchmark.json --execute-inline
+uv run python scripts/generate_openmm_lj13_baseline_artifacts.py
+```
+
+This writes:
+
+- `artifacts/benchmarks/openmm-lj13-baselines-v1/report.json`
+- `docs/benchmarks/assets/openmm_lj13_baseline_comparison.csv`
+- `docs/benchmarks/assets/openmm_lj13_baseline_comparison.png`
+
 ## How to interpret it
 
 This is intentionally a harder benchmark than the pair problem.
@@ -45,3 +58,9 @@ This is intentionally a harder benchmark than the pair problem.
 - high cross-seed variance: the method is sensitive to initialization
 
 If the current optimizer struggles here, that is not a contradiction of the pair result. It means the repository has crossed from smooth local recovery into a genuine global-optimization benchmark.
+
+The current checked-in baseline comparison supports a narrower but more useful claim:
+
+- `bayesian_gp` is better than `random_search` on average under the current raw `LJ13` budget
+- both optimizers can still reach the accepted minimum in the best case
+- hit-rate and top-k summaries are more informative than the mean over all raw trajectories

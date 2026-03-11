@@ -1,0 +1,32 @@
+{
+  "name": "meep-photonic-devices-baselines-v1",
+  "description": "Baseline comparison suite for refined block-based photonic device optimization under matched MEEP budgets.",
+  "paper_hypothesis": "Under the same refined MEEP device budgets, Bayesian optimization should outperform random search on average while preserving reproducibility artifacts.",
+  "primary_metric": "device_score",
+  "campaigns": [
+    "benchmarks/meep_photonic_devices/campaigns/refined_mode_converter_bayesian.json",
+    "benchmarks/meep_photonic_devices/campaigns/refined_mode_converter_random.json",
+    "benchmarks/meep_photonic_devices/campaigns/refined_splitter_bayesian.json",
+    "benchmarks/meep_photonic_devices/campaigns/refined_splitter_random.json",
+    "benchmarks/meep_photonic_devices/campaigns/refined_demux_bayesian.json",
+    "benchmarks/meep_photonic_devices/campaigns/refined_demux_random.json"
+  ],
+  "evaluation": {
+    "report_fields": [
+      "best_metric",
+      "median_metric",
+      "mean_metric",
+      "succeeded_runs",
+      "failed_runs",
+      "timed_out_runs",
+      "artifact_coverage",
+      "workflow_stage_coverage"
+    ],
+    "top_k_sizes": [3],
+    "baseline_notes": [
+      "Compare Bayesian and random search under the same refined photonic-device budgets.",
+      "Use task-specific secondary metrics from the best run to judge whether score gains reflect useful device behavior.",
+      "Treat this as a block-parameter optimizer comparison, not a topology-optimization benchmark."
+    ]
+  }
+}

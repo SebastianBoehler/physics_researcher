@@ -30,6 +30,7 @@ docker compose --profile lammps run --rm --no-deps worker-lammps uv run pytest t
 - Templates live in `packages/simulators/src/autolab/simulators/templates/meep`.
 - The `MeepSimulator` adapter generates a Python driver, launch script, manifests, logs, and spectrum summary JSON.
 - Enable it with `AUTOLAB_ENABLE_MEEP=true`. By default it uses the configured Python interpreter, so the `meep` Python module must be installed in that environment.
+- If MEEP lives in a separate conda environment, point the adapter at that interpreter with `AUTOLAB_MEEP_BIN=/path/to/env/bin/python`.
 
 ## Quantum ESPRESSO, OpenMM, Elmer, and DEVSIM
 

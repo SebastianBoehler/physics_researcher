@@ -1,0 +1,29 @@
+{
+  "name": "meep-photonic-devices-advanced-v1",
+  "description": "Higher-budget photonic-device benchmark with literature-shaped metrics, coarse-to-fine search, and a third optional scatterer block.",
+  "paper_hypothesis": "A coarse-to-fine Bayesian search over a slightly more expressive photonic geometry family should improve literature-shaped device metrics relative to the current refined benchmark.",
+  "primary_metric": "device_score",
+  "campaigns": [
+    "benchmarks/meep_photonic_devices/campaigns/advanced_mode_converter.json",
+    "benchmarks/meep_photonic_devices/campaigns/advanced_splitter.json",
+    "benchmarks/meep_photonic_devices/campaigns/advanced_demux.json"
+  ],
+  "evaluation": {
+    "report_fields": [
+      "best_metric",
+      "median_metric",
+      "mean_metric",
+      "succeeded_runs",
+      "failed_runs",
+      "timed_out_runs",
+      "artifact_coverage",
+      "workflow_stage_coverage"
+    ],
+    "top_k_sizes": [3],
+    "baseline_notes": [
+      "Treat these as block-based photonic design improvements, not topology optimization.",
+      "Judge the result by insertion loss, isolation or crosstalk, and bandwidth-style metrics, not just the aggregate score.",
+      "The coarse-to-fine optimizer should first explore globally, then narrow its search around the strongest observed region."
+    ]
+  }
+}

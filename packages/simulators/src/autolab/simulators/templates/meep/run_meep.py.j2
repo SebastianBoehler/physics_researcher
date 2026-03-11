@@ -94,6 +94,22 @@ if {{ block2_x | default(0.0, true) }} > 0 and {{ block2_y | default(0.0, true) 
             material=core,
         )
     )
+if {{ block3_x | default(0.0, true) }} > 0 and {{ block3_y | default(0.0, true) }} > 0:
+    geometry.append(
+        mp.Block(
+            size=mp.Vector3(
+                {{ block3_x | default(0.0, true) }},
+                {{ block3_y | default(0.0, true) }},
+                mp.inf,
+            ),
+            center=mp.Vector3(
+                {{ block3_center_x | default(0.0, true) }},
+                {{ block3_center_y | default(0.0, true) }},
+                0,
+            ),
+            material=core,
+        )
+    )
 sources = [
     mp.Source(
         mp.GaussianSource({{ fcen }}, fwidth={{ df }}),

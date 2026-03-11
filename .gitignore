@@ -20,3 +20,4 @@ mlruns/
 infra/compose/data/
 apps/web/node_modules/
 node_modules/
+notes/

@@ -1,0 +1,112 @@
+{
+  "name": "benchmark-meep-broadband-mode-converter-advanced",
+  "description": "Higher-budget mode-converter benchmark with coarse-to-fine Bayesian search and a third optional scatterer block.",
+  "mode": "materials_discovery",
+  "objectives": [
+    {
+      "name": "maximize_literature_shaped_device_score",
+      "metric_key": "device_score",
+      "direction": "maximize",
+      "weight": 1.0
+    }
+  ],
+  "constraints": [],
+  "search_space": {
+    "dimensions": [
+      { "name": "block_x", "kind": "continuous", "lower": 1.4, "upper": 2.8, "choices": [] },
+      { "name": "block_y", "kind": "continuous", "lower": 3.8, "upper": 5.6, "choices": [] },
+      { "name": "refractive_index", "kind": "continuous", "lower": 2.2, "upper": 3.0, "choices": [] },
+      { "name": "block_center_x", "kind": "continuous", "lower": -0.8, "upper": 0.8, "choices": [] },
+      { "name": "block_center_y", "kind": "continuous", "lower": -0.8, "upper": 0.8, "choices": [] },
+      { "name": "block2_x", "kind": "continuous", "lower": 0.0, "upper": 2.2, "choices": [] },
+      { "name": "block2_y", "kind": "continuous", "lower": 0.0, "upper": 2.2, "choices": [] },
+      { "name": "block2_center_x", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "block2_center_y", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "block3_x", "kind": "continuous", "lower": 0.0, "upper": 1.6, "choices": [] },
+      { "name": "block3_y", "kind": "continuous", "lower": 0.0, "upper": 1.6, "choices": [] },
+      { "name": "block3_center_x", "kind": "continuous", "lower": -1.8, "upper": 1.8, "choices": [] },
+      { "name": "block3_center_y", "kind": "continuous", "lower": -1.8, "upper": 1.8, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 18,
+    "batch_size": 1,
+    "max_failures": 4
+  },
+  "simulator": "meep",
+  "workflow": {
+    "name": "benchmark-meep-broadband-mode-converter-advanced",
+    "stages": [
+      {
+        "name": "meep",
+        "simulator": "meep",
+        "task": {
+          "name": "meep_flux_scan",
+          "simulator": "meep",
+          "parameters": {
+            "device_kind": "waveguide_block",
+            "sx": 18.0,
+            "sy": 9.0,
+            "block_x": 1.9,
+            "block_y": 4.9,
+            "block_center_x": 0.0,
+            "block_center_y": 0.0,
+            "block2_x": 0.0,
+            "block2_y": 0.0,
+            "block2_center_x": 0.0,
+            "block2_center_y": 0.0,
+            "block3_x": 0.0,
+            "block3_y": 0.0,
+            "block3_center_x": 0.0,
+            "block3_center_y": 0.0,
+            "refractive_index": 2.4,
+            "resolution": 28,
+            "dpml": 1.0,
+            "fcen": 0.17,
+            "df": 0.08,
+            "nfreq": 61,
+            "until": 100
+          },
+          "units": {
+            "sx": "um",
+            "sy": "um",
+            "block_x": "um",
+            "block_y": "um",
+            "block_center_x": "um",
+            "block_center_y": "um",
+            "block2_x": "um",
+            "block2_y": "um",
+            "block2_center_x": "um",
+            "block2_center_y": "um",
+            "block3_x": "um",
+            "block3_y": "um",
+            "block3_center_x": "um",
+            "block3_center_y": "um"
+          },
+          "expected_outputs": ["meep_results.json", "stdout.log", "stderr.log"]
+        },
+        "depends_on": [],
+        "mapping_id": null,
+        "metadata": {}
+      }
+    ],
+    "metadata": {
+      "benchmark_family": "meep_photonic_devices_advanced",
+      "difficulty": "high"
+    }
+  },
+  "seed": 501,
+  "tags": ["benchmark", "meep", "photonics", "mode-converter", "advanced"],
+  "metadata": {
+    "benchmark_id": "meep-mode-converter-advanced",
+    "analysis_focus": "coarse-to-fine broadband mode-conversion search",
+    "optimizer": {
+      "algorithm": "coarse_to_fine_bayesian",
+      "candidate_pool_size": 64,
+      "coarse_observation_count": 6,
+      "top_candidate_count": 3,
+      "minimum_window_fraction": 0.22,
+      "padding_fraction": 0.08
+    }
+  }
+}

@@ -180,6 +180,68 @@ AUTOLAB_ENABLE_MEEP=true uv run autolab run-benchmark --manifest-path benchmarks
 
 This benchmark evaluates a broadband mode-converter task, a two-port splitter task, and a two-port demultiplexer task under a shared `device_score` metric.
 
+To compare `bayesian_gp` and `random_search` on the refined photonic-device family under matched budgets, the repository now also includes:
+
+- benchmark manifest: [baselines_benchmark.json](benchmarks/meep_photonic_devices/baselines_benchmark.json)
+
+Run it with:
+
+```bash
+AUTOLAB_ENABLE_MEEP=true AUTOLAB_MEEP_BIN=/path/to/meep-python uv run autolab run-benchmark --manifest-path benchmarks/meep_photonic_devices/baselines_benchmark.json --execute-inline
+```
+
+The current local comparison was run with `AUTOLAB_MEEP_BIN=/Users/sebastianboehler/miniconda3/envs/autolab-meep/bin/python`, which points the MEEP simulator adapter at a Python environment that already contains `pymeep`. The resulting report lives at `artifacts/benchmarks/meep-photonic-devices-baselines-v1/report.json`.
+
+In that local run, the refined baseline suite shows the same optimizer preference as `LJ13`: Bayesian is better than random search on all three device classes.
+
+- mode converter `device_score`: `0.5087` vs `0.4556`
+- splitter `device_score`: `2.1909` vs `1.9923`
+- demux `device_score`: `5.3592` vs `4.3056`
+
+On the aggregate summary, Bayesian also wins on the cross-task averages:
+
+- Bayesian mean best metric: `2.6863`
+- Random mean best metric: `2.2512`
+- Bayesian mean median metric: `0.5676`
+- Random mean median metric: `0.1602`
+
+This does not make the devices literature-competitive, but it is meaningful evidence that the framework's default optimizer is doing nontrivial work beyond a random baseline in both OpenMM and MEEP.
+
+To push the photonic pipeline further with literature-shaped metrics, the repository also includes an advanced suite with:
+
+- benchmark manifest: [advanced_benchmark.json](benchmarks/meep_photonic_devices/advanced_benchmark.json)
+- comparison script: [generate_meep_photonic_advanced_comparison.py](scripts/generate_meep_photonic_advanced_comparison.py)
+
+Run it with:
+
+```bash
+AUTOLAB_ENABLE_MEEP=true AUTOLAB_MEEP_BIN=/Users/sebastianboehler/miniconda3/envs/autolab-meep/bin/python uv run autolab run-benchmark --manifest-path benchmarks/meep_photonic_devices/advanced_benchmark.json --execute-inline --max-parallel-campaigns 2
+uv run python scripts/generate_meep_photonic_advanced_comparison.py
+```
+
+The current advanced local run completed all `54/54` MEEP simulations successfully and wrote its report to `artifacts/benchmarks/meep-photonic-devices-advanced-v1/report.json`. It uses a coarse-to-fine Bayesian optimizer, a third optional scatterer block, and dB-shaped photonic metrics.
+That full run only succeeded after hardening the coarse-to-fine bounds logic against collapsed or inverted refined windows, so the advanced result also serves as a stability check for the new optimizer path.
+
+The honest comparison against the earlier refined suite is on derived physical metrics, not the old `device_score`, because the refined report predates the new scoring formulation. The checked-in comparison artifacts are:
+
+- `docs/benchmarks/assets/meep_photonic_advanced_comparison.csv`
+- `docs/benchmarks/assets/meep_photonic_advanced_comparison.png`
+
+On those raw metrics, the advanced pipeline improves several photonic quantities:
+
+- mode-converter insertion loss: `7.37 dB` -> `5.44 dB`
+- splitter excess loss: `25.80 dB` -> `12.18 dB`
+- splitter imbalance: `1.17 dB` -> `0.35 dB`
+- demux insertion loss: `22.58 dB` -> `20.31 dB`
+- demux bandwidth fraction: `0.00` -> `0.21`
+
+It also regresses on some quantities that matter:
+
+- mode-converter bandwidth fraction: `0.39` -> `0.28`
+- demux isolation: `1.08 dB` -> `0.89 dB`
+
+So the current conclusion is narrower than "the advanced pipeline wins." The framework can now run a more realistic coarse-to-fine photonic search and improve several device metrics, but the geometry family and objective design are still limiting the final device quality.
+
 To regenerate the comparison figures between the initial suite and the latest refined rerun:
 
 ```bash
@@ -222,7 +284,25 @@ The raw global-search `LJ13` benchmark is intentionally hard:
 AUTOLAB_ENABLE_OPENMM=true uv run autolab run-benchmark --manifest-path benchmarks/openmm_lj13_cluster/benchmark.json --execute-inline
 ```
 
-In the current full local run, all 96/96 runs succeeded, but the best observed gap was still `330.6164420835543`. That makes it a useful stress test for many-body global search, but not yet a strong result for minimum recovery with the current optimizer.
+In the current full local rerun with the current code, all 96/96 runs succeeded and the best observed gap was `1.1845116887343465e-07`, while the mean gap across all runs remained large at `686.0569047524017`. That makes it a useful stress test for many-body global search: the pipeline can hit the accepted minimum, but the raw search still produces many poor trajectories and should be judged by hit rate and best-gap statistics rather than the mean alone.
+
+To compare optimizer baselines under the same raw `LJ13` budget, use the baseline suite:
+
+- benchmark manifest: [benchmark.json](benchmarks/openmm_lj13_baselines/benchmark.json)
+
+Run it with:
+
+```bash
+AUTOLAB_ENABLE_OPENMM=true uv run autolab run-benchmark --manifest-path benchmarks/openmm_lj13_baselines/benchmark.json --execute-inline
+uv run python scripts/generate_openmm_lj13_baseline_artifacts.py
+```
+
+The resulting report groups campaigns by `baseline_name` so Bayesian and random-search runs can be compared directly in one summary. In the current 12-campaign local rerun with 6 seeds per baseline, `bayesian_gp` achieved a mean best gap of `3.973642985026042e-07` versus `7.157611510895853e-07` for `random_search`, and it produced stronger low-gap hit rates at both `<1e-5` and `<1e-6`. Both baselines still reached the same best single-run gap of `1.1845116887343465e-07`, so the current evidence is "Bayesian is better on average under this budget," not "random search cannot get there."
+
+The checked-in `LJ13` comparison artifacts are:
+
+- `docs/benchmarks/assets/openmm_lj13_baseline_comparison.csv`
+- `docs/benchmarks/assets/openmm_lj13_baseline_comparison.png`
 
 For a fairer local-reliability benchmark, use the refined `LJ13` variant with compact icosahedral perturbations and deterministic local minimization:
 

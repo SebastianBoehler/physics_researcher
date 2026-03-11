@@ -1,0 +1,79 @@
+{
+  "name": "openmm-lj13-cluster-bayesian-seed-59",
+  "description": "LJ13 raw global-search baseline using the default Bayesian optimizer.",
+  "mode": "process_optimization",
+  "objectives": [
+    {
+      "name": "minimize_energy_gap_to_reference",
+      "metric_key": "energy_gap_to_reference",
+      "direction": "minimize",
+      "weight": 1.0
+    }
+  ],
+  "constraints": [],
+  "search_space": {
+    "dimensions": [
+      { "name": "system_kind", "kind": "categorical", "choices": ["lj_cluster"] },
+      { "name": "platform_name", "kind": "categorical", "choices": ["CPU"] },
+      { "name": "atom_count", "kind": "categorical", "choices": ["13"] },
+      { "name": "sigma", "kind": "categorical", "choices": ["1.0"] },
+      { "name": "epsilon", "kind": "categorical", "choices": ["1.0"] },
+      { "name": "temperature", "kind": "categorical", "choices": ["1.0"] },
+      { "name": "steps", "kind": "categorical", "choices": ["0"] },
+      { "name": "friction", "kind": "categorical", "choices": ["1.0"] },
+      { "name": "step_size_fs", "kind": "categorical", "choices": ["1.0"] },
+      { "name": "reference_cluster_energy", "kind": "categorical", "choices": ["-44.3268014185"] },
+      { "name": "atom_1_x", "kind": "continuous", "lower": 0.85, "upper": 1.35, "choices": [] },
+      { "name": "atom_2_x", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_2_y", "kind": "continuous", "lower": 0.2, "upper": 1.4, "choices": [] },
+      { "name": "atom_3_x", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_3_y", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_3_z", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_4_x", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_4_y", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_4_z", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_5_x", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_5_y", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_5_z", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_6_x", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_6_y", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_6_z", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_7_x", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_7_y", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_7_z", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_8_x", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_8_y", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_8_z", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_9_x", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_9_y", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_9_z", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_10_x", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_10_y", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_10_z", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_11_x", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_11_y", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_11_z", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_12_x", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_12_y", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] },
+      { "name": "atom_12_z", "kind": "continuous", "lower": -1.6, "upper": 1.6, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 96,
+    "batch_size": 1,
+    "max_failures": 4
+  },
+  "simulator": "openmm",
+  "seed": 59,
+  "tags": ["openmm", "benchmark", "lennard-jones", "cluster", "lj13", "baseline", "bayesian"],
+  "metadata": {
+    "baseline_name": "bayesian_gp",
+    "optimizer": {
+      "algorithm": "bayesian_gp"
+    },
+    "operator_prompt": "Use the default Bayesian optimizer on the raw LJ13 benchmark and record the best gap to the accepted global minimum under the fixed baseline budget.",
+    "benchmark_family": "openmm_lj13_baselines",
+    "reference_atom_count": 13,
+    "reference_energy_kj_per_mol": -44.3268014185
+  }
+}

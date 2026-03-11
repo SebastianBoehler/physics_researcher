@@ -1,0 +1,34 @@
+{
+  "name": "openmm-lj13-baselines-v1",
+  "description": "Baseline comparison suite for the raw LJ13 global-search benchmark under matched budgets. Compares the default Bayesian optimizer against a random-search baseline across multiple seeds.",
+  "paper_hypothesis": "On the raw LJ13 global-search benchmark, the Bayesian optimizer should achieve lower energy gaps than a simple random-search baseline under the same run budget and search space.",
+  "primary_metric": "energy_gap_to_reference",
+  "campaigns": [
+    "campaigns/openmm_lj13_cluster_bayesian_seed_31.json",
+    "campaigns/openmm_lj13_cluster_bayesian_seed_43.json",
+    "campaigns/openmm_lj13_cluster_bayesian_seed_59.json",
+    "campaigns/openmm_lj13_cluster_bayesian_seed_71.json",
+    "campaigns/openmm_lj13_cluster_bayesian_seed_89.json",
+    "campaigns/openmm_lj13_cluster_bayesian_seed_131.json",
+    "campaigns/openmm_lj13_cluster_random_seed_31.json",
+    "campaigns/openmm_lj13_cluster_random_seed_43.json",
+    "campaigns/openmm_lj13_cluster_random_seed_59.json",
+    "campaigns/openmm_lj13_cluster_random_seed_71.json",
+    "campaigns/openmm_lj13_cluster_random_seed_89.json",
+    "campaigns/openmm_lj13_cluster_random_seed_131.json"
+  ],
+  "evaluation": {
+    "reference_best_metric": 0.0,
+    "reference_direction": "minimize",
+    "reference_atom_count": 13,
+    "reference_energy_kj_per_mol": -44.3268014185,
+    "low_gap_thresholds": [1e-5, 1e-6],
+    "top_k_sizes": [3],
+    "reference_note": "Accepted reduced-unit LJ13 global minimum energy, used here to compare optimizer baselines under identical budgets.",
+    "baseline_notes": [
+      "Compare mean best gap across baseline groups rather than a single run.",
+      "Keep max_runs, batch_size, and search-space bounds fixed across optimizer variants.",
+      "Report both best gap and success rate of reaching low-gap basins across seeds."
+    ]
+  }
+}

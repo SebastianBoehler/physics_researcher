@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any
@@ -32,6 +33,31 @@ def _int_value(values: dict[str, Any], key: str, default: int) -> int:
 
 def _mean(values: list[float]) -> float:
     return sum(values) / len(values) if values else 0.0
+
+
+def _power_db(value: float, *, floor: float = 1.0e-12) -> float:
+    return 10.0 * math.log10(max(value, floor))
+
+
+def _insertion_loss_db(value: float) -> float:
+    return -_power_db(value)
+
+
+def _return_loss_db(value: float) -> float:
+    return -_power_db(value)
+
+
+def _imbalance_db(first: float, second: float, *, floor: float = 1.0e-12) -> float:
+    numerator = max(first, second, floor)
+    denominator = max(min(first, second), floor)
+    return 10.0 * math.log10(numerator / denominator)
+
+
+def _bandwidth_fraction(values: list[float], predicate: Any) -> float:
+    if not values:
+        return 0.0
+    hits = sum(1 for value in values if predicate(value))
+    return hits / len(values)
 
 
 def _split_halves(values: list[float]) -> tuple[list[float], list[float]]:
@@ -88,6 +114,10 @@ class MeepSimulator(WorkflowBackedSimulator):
                 "block2_y": _float_value(values, "block2_y", 0.0),
                 "block2_center_x": _float_value(values, "block2_center_x", 0.0),
                 "block2_center_y": _float_value(values, "block2_center_y", 0.0),
+                "block3_x": _float_value(values, "block3_x", 0.0),
+                "block3_y": _float_value(values, "block3_y", 0.0),
+                "block3_center_x": _float_value(values, "block3_center_x", 0.0),
+                "block3_center_y": _float_value(values, "block3_center_y", 0.0),
                 "refractive_index": _float_value(values, "refractive_index", 3.4),
             },
             units={
@@ -101,6 +131,10 @@ class MeepSimulator(WorkflowBackedSimulator):
                 "block2_y": "um",
                 "block2_center_x": "um",
                 "block2_center_y": "um",
+                "block3_x": "um",
+                "block3_y": "um",
+                "block3_center_x": "um",
+                "block3_center_y": "um",
             },
         )
         return SimulationTask(
@@ -187,8 +221,20 @@ class MeepSimulator(WorkflowBackedSimulator):
                 "transmission_mean": _mean(transmission),
                 "reflection_mean": _mean(reflection),
             }
+            metrics.update(
+                {
+                    "insertion_loss_db": _insertion_loss_db(metrics["transmission_mean"]),
+                    "return_loss_db": _return_loss_db(metrics["reflection_mean"]),
+                }
+            )
+            passband_threshold = max(0.1, 0.5 * metrics["transmission_peak"])
+            metrics["passband_fraction"] = _bandwidth_fraction(
+                transmission, lambda value: value >= passband_threshold
+            )
             metrics["device_score"] = (
-                4.0 * metrics["transmission_mean"] - 0.1 * metrics["reflection_peak"]
+                metrics["return_loss_db"]
+                - metrics["insertion_loss_db"]
+                + 5.0 * metrics["passband_fraction"]
             )
 
             if upper or lower:
@@ -209,12 +255,38 @@ class MeepSimulator(WorkflowBackedSimulator):
                         "total_output_mean": _mean(combined),
                         "split_imbalance": abs(upper_mean - lower_mean),
                         "split_balance": 1.0 - abs(upper_mean - lower_mean) / split_denominator,
+                        "split_imbalance_db": _imbalance_db(upper_mean, lower_mean),
+                        "splitter_excess_loss_db": _insertion_loss_db(_mean(combined)),
                         "splitter_score": _mean(combined)
                         * (1.0 - abs(upper_mean - lower_mean) / split_denominator),
                     }
                 )
+                pairwise_totals = [
+                    upper_value + lower_value
+                    for upper_value, lower_value in zip(upper, lower, strict=False)
+                ]
+                pairwise_imbalance_db = [
+                    _imbalance_db(upper_value, lower_value)
+                    for upper_value, lower_value in zip(upper, lower, strict=False)
+                ]
+                splitter_threshold = max(1.0e-6, 0.5 * metrics["total_output_peak"])
+                metrics["splitter_bandwidth_fraction"] = (
+                    sum(
+                        1
+                        for total_value, imbalance_value in zip(
+                            pairwise_totals, pairwise_imbalance_db, strict=False
+                        )
+                        if total_value >= splitter_threshold and imbalance_value <= 1.0
+                    )
+                    / len(pairwise_totals)
+                    if pairwise_totals
+                    else 0.0
+                )
                 metrics["device_score"] = (
-                    1000.0 * metrics["splitter_score"] - 0.1 * metrics["reflection_peak"]
+                    -metrics["splitter_excess_loss_db"]
+                    - metrics["split_imbalance_db"]
+                    + 0.25 * metrics["return_loss_db"]
+                    + 5.0 * metrics["splitter_bandwidth_fraction"]
                 )
 
                 upper_low, upper_high = _split_halves(upper)
@@ -222,6 +294,10 @@ class MeepSimulator(WorkflowBackedSimulator):
                 route_targets = payload.get("route_targets", {})
                 low_target = str(route_targets.get("low", "upper"))
                 high_target = str(route_targets.get("high", "lower"))
+                low_target_series = upper_low if low_target == "upper" else lower_low
+                low_off_series = lower_low if low_target == "upper" else upper_low
+                high_target_series = upper_high if high_target == "upper" else lower_high
+                high_off_series = lower_high if high_target == "upper" else upper_high
                 target_low = _mean(upper_low) if low_target == "upper" else _mean(lower_low)
                 off_low = _mean(lower_low) if low_target == "upper" else _mean(upper_low)
                 target_high = _mean(upper_high) if high_target == "upper" else _mean(lower_high)
@@ -235,13 +311,40 @@ class MeepSimulator(WorkflowBackedSimulator):
                         "demux_target_mean": 0.5 * (target_low + target_high),
                         "demux_leakage_mean": 0.5 * (off_low + off_high),
                         "demux_score": (target_low - off_low) + (target_high - off_high),
+                        "demux_insertion_loss_db": _insertion_loss_db(
+                            0.5 * (target_low + target_high)
+                        ),
+                        "demux_crosstalk_db": _power_db(
+                            (0.5 * (off_low + off_high))
+                            / max(0.5 * (target_low + target_high), 1.0e-12)
+                        ),
                     }
+                )
+                metrics["demux_isolation_db"] = -metrics["demux_crosstalk_db"]
+                routing_target_series = [*low_target_series, *high_target_series]
+                routing_off_series = [*low_off_series, *high_off_series]
+                routing_threshold = max(
+                    1.0e-6,
+                    0.5 * max(routing_target_series) if routing_target_series else 1.0e-6,
+                )
+                metrics["demux_bandwidth_fraction"] = (
+                    sum(
+                        1
+                        for target_value, off_value in zip(
+                            routing_target_series, routing_off_series, strict=False
+                        )
+                        if target_value >= routing_threshold and target_value >= 1.258925 * off_value
+                    )
+                    / len(routing_target_series)
+                    if routing_target_series
+                    else 0.0
                 )
                 if payload.get("device_kind") == "demux":
                     metrics["device_score"] = (
-                        2000.0 * metrics["demux_score"]
-                        + 100.0 * metrics["demux_target_mean"]
-                        - 0.05 * metrics["reflection_peak"]
+                        -metrics["demux_insertion_loss_db"]
+                        + metrics["demux_isolation_db"]
+                        + 0.25 * metrics["return_loss_db"]
+                        + 5.0 * metrics["demux_bandwidth_fraction"]
                     )
         else:
             errors.append("missing meep_results.json")

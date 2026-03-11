@@ -1,0 +1,105 @@
+{
+  "name": "benchmark-meep-splitter-refined-bayesian",
+  "description": "Refined splitter benchmark using the default Bayesian optimizer.",
+  "mode": "materials_discovery",
+  "objectives": [
+    {
+      "name": "maximize_device_score",
+      "metric_key": "device_score",
+      "direction": "maximize",
+      "weight": 1.0
+    }
+  ],
+  "constraints": [],
+  "search_space": {
+    "dimensions": [
+      { "name": "block_x", "kind": "continuous", "lower": 3.7, "upper": 4.4, "choices": [] },
+      { "name": "block_y", "kind": "continuous", "lower": 4.1, "upper": 4.8, "choices": [] },
+      { "name": "refractive_index", "kind": "continuous", "lower": 3.3, "upper": 3.9, "choices": [] },
+      { "name": "arm_separation", "kind": "continuous", "lower": 2.5, "upper": 3.2, "choices": [] },
+      { "name": "output_width", "kind": "continuous", "lower": 1.1, "upper": 1.4, "choices": [] },
+      { "name": "block_center_x", "kind": "continuous", "lower": -0.3, "upper": 0.8, "choices": [] },
+      { "name": "block_center_y", "kind": "continuous", "lower": -1.0, "upper": 1.0, "choices": [] },
+      { "name": "block2_x", "kind": "continuous", "lower": 0.6, "upper": 2.4, "choices": [] },
+      { "name": "block2_y", "kind": "continuous", "lower": 0.6, "upper": 2.4, "choices": [] },
+      { "name": "block2_center_x", "kind": "continuous", "lower": -0.8, "upper": 1.2, "choices": [] },
+      { "name": "block2_center_y", "kind": "continuous", "lower": -2.0, "upper": 2.0, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 8,
+    "batch_size": 1,
+    "max_failures": 3
+  },
+  "simulator": "meep",
+  "workflow": {
+    "name": "benchmark-meep-splitter-refined-bayesian",
+    "stages": [
+      {
+        "name": "meep",
+        "simulator": "meep",
+        "task": {
+          "name": "meep_flux_scan",
+          "simulator": "meep",
+          "parameters": {
+            "device_kind": "splitter",
+            "sx": 20.0,
+            "sy": 10.0,
+            "block_x": 4.0,
+            "block_y": 4.4,
+            "block_center_x": 0.2,
+            "block_center_y": 0.0,
+            "block2_x": 1.2,
+            "block2_y": 1.0,
+            "block2_center_x": -0.3,
+            "block2_center_y": 0.8,
+            "refractive_index": 3.7,
+            "input_width": 1.0,
+            "output_width": 1.25,
+            "arm_separation": 2.9,
+            "input_length": 5.0,
+            "output_length": 5.0,
+            "resolution": 24,
+            "dpml": 1.0,
+            "fcen": 0.15,
+            "df": 0.1,
+            "nfreq": 41,
+            "until": 90
+          },
+          "units": {
+            "sx": "um",
+            "sy": "um",
+            "block_x": "um",
+            "block_y": "um",
+            "block_center_x": "um",
+            "block_center_y": "um",
+            "block2_x": "um",
+            "block2_y": "um",
+            "block2_center_x": "um",
+            "block2_center_y": "um",
+            "arm_separation": "um",
+            "output_width": "um"
+          },
+          "expected_outputs": ["meep_results.json", "stdout.log", "stderr.log"]
+        },
+        "depends_on": [],
+        "mapping_id": null,
+        "metadata": {}
+      }
+    ],
+    "metadata": {
+      "benchmark_family": "meep_photonic_devices_baselines",
+      "difficulty": "medium"
+    }
+  },
+  "seed": 402,
+  "tags": ["benchmark", "meep", "photonics", "splitter", "refined", "baseline", "bayesian"],
+  "metadata": {
+    "benchmark_id": "meep-splitter-refined-bayesian",
+    "analysis_focus": "refined splitter optimizer comparison",
+    "baseline_name": "bayesian_gp",
+    "optimizer": {
+      "algorithm": "bayesian_gp"
+    }
+  }
+}

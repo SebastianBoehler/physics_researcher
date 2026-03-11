@@ -24,7 +24,7 @@ from autolab.core.models import (
 from autolab.core.settings import Settings
 from autolab.core.utils import sha256_digest, stable_json_dumps
 from autolab.evaluation import compute_objective_score, validate_constraints
-from autolab.optimizers import BayesianOptimizer
+from autolab.optimizers import build_optimizer
 from autolab.simulators.types import PreparedRun
 from autolab.skills import SkillContext, get_builtin_skills
 from autolab.storage import (
@@ -54,12 +54,12 @@ class CampaignService:
     def __init__(self, settings: Settings, simulator_registry: Any) -> None:
         self._settings = settings
         self._simulator_registry = simulator_registry
-        self._optimizer = BayesianOptimizer()
         self._skills = get_builtin_skills()
         self._artifact_store = ArtifactStore(settings)
         self._stage_mappings = build_stage_mapping_registry()
 
     def create_campaign(self, campaign: Campaign) -> Campaign:
+        self._resolve_optimizer(campaign)
         snapshot = self._settings.snapshot()
         snapshot_digest = sha256_digest(stable_json_dumps(snapshot).encode("utf-8"))
         with session_scope(self._settings) as session:
@@ -88,9 +88,10 @@ class CampaignService:
             campaign = campaigns.get(campaign_id)
             if campaign is None:
                 return []
+            optimizer = self._resolve_optimizer(campaign)
             previous_candidates = runs.list_candidates(campaign_id)
             previous_runs = runs.list_runs(campaign_id)
-            suggested, _ = self._optimizer.suggest(
+            suggested, _ = optimizer.suggest(
                 campaign,
                 previous_candidates=previous_candidates,
                 previous_runs=previous_runs,
@@ -112,6 +113,7 @@ class CampaignService:
             if campaign.status not in {CampaignStatus.RUNNING, CampaignStatus.DRAFT}:
                 msg = f"campaign {campaign_id} cannot step from status {campaign.status.value}"
                 raise ValueError(msg)
+            optimizer = self._resolve_optimizer(campaign)
 
             prior_candidates = runs.list_candidates(campaign_id)
             prior_runs = runs.list_runs(campaign_id)
@@ -119,7 +121,7 @@ class CampaignService:
                 campaigns.update_status(campaign_id, CampaignStatus.COMPLETED)
                 return {"campaign_id": str(campaign_id), "status": "completed", "run_ids": []}
 
-            batch, optimizer_state = self._optimizer.suggest(
+            batch, optimizer_state = optimizer.suggest(
                 campaign,
                 previous_candidates=prior_candidates,
                 previous_runs=prior_runs,
@@ -133,7 +135,9 @@ class CampaignService:
                     campaign_id=campaign.id,
                     agent_name="planner_agent",
                     action="propose_batch",
-                    rationale="Bayesian optimizer proposed the next candidate batch.",
+                    rationale=(
+                        f"{optimizer.algorithm_name} proposed the next candidate batch."
+                    ),
                     structured_output={"candidate_ids": [str(candidate.id) for candidate in batch]},
                 )
             )
@@ -177,7 +181,7 @@ class CampaignService:
                 summary_skill.input_model(runs=completed_runs[-5:]),
                 SkillContext(
                     campaign_service=self,
-                    optimizer=self._optimizer,
+                    optimizer=optimizer,
                     simulator_registry=self._simulator_registry,
                 ),
             )
@@ -202,6 +206,9 @@ class CampaignService:
                 "status": final_campaign.status.value,
                 "run_ids": [str(run.id) for run in executed_runs],
             }
+
+    def _resolve_optimizer(self, campaign: Campaign) -> Any:
+        return build_optimizer(campaign.metadata)
 
     def _execute_batch_runs(
         self,
