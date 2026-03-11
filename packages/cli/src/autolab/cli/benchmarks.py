@@ -55,9 +55,10 @@ def summarize_campaign_runs(
     primary_metric: str,
     step_history: list[dict[str, Any]],
 ) -> dict[str, Any]:
+    ordered_runs = sorted(runs, key=lambda run: str(run.get("created_at", "")))
     metric_values = [
         float(run["metrics"][primary_metric])
-        for run in runs
+        for run in ordered_runs
         if primary_metric in run.get("metrics", {})
     ]
     objective_direction = "maximize"
@@ -75,7 +76,23 @@ def summarize_campaign_runs(
         else 1
     )
 
-    for run in runs:
+    metric_history = [
+        float(run["metrics"][primary_metric])
+        for run in ordered_runs
+        if primary_metric in run.get("metrics", {})
+    ]
+    best_so_far_history: list[float] = []
+    running_best: float | None = None
+    for value in metric_history:
+        if running_best is None:
+            running_best = value
+        elif objective_direction == "minimize":
+            running_best = min(running_best, value)
+        else:
+            running_best = max(running_best, value)
+        best_so_far_history.append(running_best)
+
+    for run in ordered_runs:
         status = str(run.get("status", "unknown"))
         status_counts[status] = status_counts.get(status, 0) + 1
         metadata = run.get("metadata", {})
@@ -109,6 +126,8 @@ def summarize_campaign_runs(
         "metric_direction": objective_direction,
         "artifact_coverage": artifact_coverage_hits / run_count if run_count else 0.0,
         "workflow_stage_coverage": workflow_stage_coverage_hits / run_count if run_count else 0.0,
+        "metric_history": metric_history,
+        "best_so_far_history": best_so_far_history,
         "step_history": step_history,
         "tags": campaign_payload.get("tags", []),
         "metadata": campaign_payload.get("metadata", {}),

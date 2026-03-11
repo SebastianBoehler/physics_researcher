@@ -9,9 +9,11 @@ from autolab.core.models import (
 )
 from autolab.core.settings import get_settings
 from autolab.simulators import (
+    CSVMeasurementSimulator,
     DevsimSimulator,
     ElmerSimulator,
     LammpsSimulator,
+    ManualProtocolSimulator,
     MeepSimulator,
     OpenMMSimulator,
     QuantumEspressoSimulator,
@@ -56,6 +58,8 @@ def test_adapters_implement_contract() -> None:
         OpenMMSimulator(settings),
         ElmerSimulator(settings),
         DevsimSimulator(settings),
+        ManualProtocolSimulator(settings),
+        CSVMeasurementSimulator(settings),
     ]
     for adapter in adapters:
         prepared = adapter.prepare_input(_candidate())

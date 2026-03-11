@@ -60,6 +60,32 @@ def test_step_records_workflow_stage_metadata() -> None:
     assert all("validation" in run["metadata"] for run in runs)
 
 
+def test_thermoelectric_measurement_workflow_records_measured_metrics() -> None:
+    client = TestClient(app)
+    headers = {"Authorization": "Bearer dev-token"}
+    payload = json.loads(
+        Path("examples/campaigns/thermoelectric_sim_to_measurement_loop.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    campaign = client.post("/campaigns", json=payload, headers=headers).json()
+    client.post(f"/campaigns/{campaign['id']}/start", headers=headers)
+    step_response = client.post(
+        f"/campaigns/{campaign['id']}/step",
+        json={"execute_inline": True},
+        headers=headers,
+    )
+
+    assert step_response.status_code == 200
+    runs_response = client.get(f"/campaigns/{campaign['id']}/runs", headers=headers)
+    runs = runs_response.json()["runs"]
+    assert runs
+    assert all(run["metrics"]["power_factor"] > 0 for run in runs)
+    assert all(run["metrics"]["electrical_conductivity"] > 0 for run in runs)
+    assert all("measurement" in run["metadata"]["stage_results"] for run in runs)
+
+
 @pytest.mark.parametrize(
     ("example_dir", "example_name"),
     [
@@ -67,6 +93,7 @@ def test_step_records_workflow_stage_metadata() -> None:
         ("examples/campaigns", "openmm_lj_pair_equilibrium.json"),
         ("examples/campaigns", "meep_waveguide_inverse_screen.json"),
         ("examples/campaigns", "qe_to_lammps_forcefield_bootstrap.json"),
+        ("examples/campaigns", "thermoelectric_sim_to_measurement_loop.json"),
         ("benchmarks/meep_inverse_design/campaigns", "waveguide_lowres_screen.json"),
         ("benchmarks/meep_inverse_design/campaigns", "qe_to_meep_transfer_screen.json"),
     ],

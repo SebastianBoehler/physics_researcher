@@ -1,0 +1,24 @@
+{
+  "name": "thermoelectric-measurement-v1",
+  "description": "A benchmark suite for the Phase-1 thermoelectric experimental loop, comparing broader versus more focused search spaces on measured power-factor feedback.",
+  "paper_hypothesis": "Even before wet-lab automation, the Autolab workflow layer should preserve artifact/provenance quality while tighter thermoelectric search spaces improve measured power-factor outcomes under the same evaluation budget.",
+  "primary_metric": "power_factor",
+  "campaigns": [
+    "campaigns/thermoelectric_broad_screen.json",
+    "campaigns/thermoelectric_focused_screen.json",
+    "campaigns/thermoelectric_high_pf_screen.json"
+  ],
+  "evaluation": {
+    "report_fields": [
+      "best_metric",
+      "mean_metric",
+      "succeeded_runs",
+      "failed_runs",
+      "timed_out_runs",
+      "artifact_coverage",
+      "workflow_stage_coverage"
+    ],
+    "reference_direction": "maximize",
+    "reference_note": "The measurement values in this benchmark come from deterministic synthetic CSV generation inside the csv_measurement stage. This is an orchestration and feedback benchmark, not an experimental claim."
+  }
+}

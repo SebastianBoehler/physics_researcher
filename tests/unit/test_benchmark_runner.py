@@ -42,6 +42,13 @@ def test_openmm_lj13_refined_benchmark_manifest_loads() -> None:
     assert manifest.evaluation["reference_atom_count"] == 13
 
 
+def test_thermoelectric_benchmark_manifest_loads() -> None:
+    manifest = load_benchmark_manifest(Path("benchmarks/thermoelectric_measurement/benchmark.json"))
+    assert manifest.name == "thermoelectric-measurement-v1"
+    assert manifest.primary_metric == "power_factor"
+    assert len(manifest.campaigns) == 3
+
+
 def test_benchmark_campaigns_validate_against_api_schema() -> None:
     for path in sorted(Path("benchmarks/meep_inverse_design/campaigns").glob("*.json")):
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -66,6 +73,11 @@ def test_benchmark_campaigns_validate_against_api_schema() -> None:
     )
     assert lj_cluster_refined_campaign.name == "openmm-lj13-cluster-refined-seed-31"
     assert len(lj_cluster_refined_campaign.search_space.dimensions) == 46
+    for path in sorted(Path("benchmarks/thermoelectric_measurement/campaigns").glob("*.json")):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        campaign = CreateCampaignRequest.model_validate(payload)
+        assert campaign.name.startswith("thermoelectric-")
+        assert campaign.workflow is not None
 
 
 def test_derive_step_budget_from_campaign_budget() -> None:
@@ -122,6 +134,8 @@ def test_summarize_campaign_runs_collects_metrics_and_coverage() -> None:
     assert summary["metric_direction"] == "maximize"
     assert summary["artifact_coverage"] == 1.0
     assert summary["workflow_stage_coverage"] == 1.0
+    assert summary["metric_history"] == [0.8, 0.2]
+    assert summary["best_so_far_history"] == [0.8, 0.8]
 
 
 def test_summarize_campaign_runs_respects_minimize_direction() -> None:
@@ -145,6 +159,8 @@ def test_summarize_campaign_runs_respects_minimize_direction() -> None:
     )
     assert summary["best_metric"] == 0.04
     assert summary["metric_direction"] == "minimize"
+    assert summary["metric_history"] == [0.9, 0.04]
+    assert summary["best_so_far_history"] == [0.9, 0.04]
 
 
 def test_build_summary_tracks_gap_to_reference() -> None:

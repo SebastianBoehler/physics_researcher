@@ -1,0 +1,102 @@
+{
+  "name": "thermoelectric-sim-to-measurement-loop",
+  "description": "Phase-1 thermoelectric discovery loop that turns candidate parameters into a fabrication protocol and measured power-factor feedback.",
+  "mode": "materials_discovery",
+  "objectives": [
+    {
+      "name": "maximize_power_factor",
+      "metric_key": "power_factor",
+      "direction": "maximize",
+      "weight": 1.0
+    }
+  ],
+  "constraints": [
+    {
+      "name": "minimum_conductivity",
+      "metric_key": "electrical_conductivity",
+      "operator": "gte",
+      "threshold": 30000.0
+    }
+  ],
+  "search_space": {
+    "dimensions": [
+      { "name": "dopant_fraction", "kind": "continuous", "lower": 0.08, "upper": 0.22, "choices": [] },
+      { "name": "sinter_temperature_c", "kind": "continuous", "lower": 650.0, "upper": 820.0, "choices": [] },
+      { "name": "anneal_hours", "kind": "continuous", "lower": 2.0, "upper": 10.0, "choices": [] }
+    ]
+  },
+  "budget": {
+    "max_runs": 2,
+    "batch_size": 1,
+    "max_failures": 1
+  },
+  "simulator": "manual_protocol",
+  "workflow": {
+    "name": "thermoelectric-mvp",
+    "stages": [
+      {
+        "name": "fabrication_protocol",
+        "simulator": "manual_protocol",
+        "task": {
+          "name": "manual_protocol",
+          "simulator": "manual_protocol",
+          "parameters": {
+            "material_family": "thermoelectric",
+            "sample_id_template": "te-{candidate_id_short}",
+            "process_temperature_c": 720.0,
+            "dwell_time_hours": 6.0,
+            "atmosphere": "argon",
+            "required_materials": ["Bi2Te3 precursor", "Sb2Te3 precursor", "press die"]
+          },
+          "units": {
+            "process_temperature_c": "celsius",
+            "dwell_time_hours": "hour"
+          },
+          "expected_outputs": ["protocol.md", "recipe.json", "handoff.json", "stdout.log", "stderr.log"],
+          "metadata": {}
+        },
+        "depends_on": [],
+        "mapping_id": null,
+        "metadata": {}
+      },
+      {
+        "name": "measurement",
+        "simulator": "csv_measurement",
+        "task": {
+          "name": "csv_measurement",
+          "simulator": "csv_measurement",
+          "parameters": {
+            "required_columns": [
+              "sample_id",
+              "replicate_id",
+              "temperature_k",
+              "delta_t_k",
+              "voltage_v",
+              "current_a",
+              "resistance_ohm",
+              "length_m",
+              "area_m2"
+            ],
+            "min_replicates": 3,
+            "auto_generate_from_candidate": true
+          },
+          "units": {},
+          "expected_outputs": ["measurement.csv", "measurement_ingest.json", "stdout.log", "stderr.log"],
+          "metadata": {}
+        },
+        "depends_on": ["fabrication_protocol"],
+        "mapping_id": null,
+        "metadata": {}
+      }
+    ],
+    "metadata": {
+      "story": "Convert a candidate into a fabrication recipe and measured thermoelectric metrics."
+    }
+  },
+  "seed": 17,
+  "tags": ["workflow", "thermoelectric", "measurement", "phase-1"],
+  "metadata": {
+    "operator_prompt": "Generate a fabrication protocol, ingest thermoelectric measurements, and optimize on measured power factor.",
+    "analysis_focus": "measured power factor with reproducible lab handoff artifacts"
+  }
+}

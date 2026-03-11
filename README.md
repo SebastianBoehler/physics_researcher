@@ -131,6 +131,7 @@ The most useful first runs are:
 
 - [demo_campaign.json](examples/campaigns/demo_campaign.json)
 - [openmm_protein_relaxation.json](examples/campaigns/openmm_protein_relaxation.json)
+- [thermoelectric_sim_to_measurement_loop.json](examples/campaigns/thermoelectric_sim_to_measurement_loop.json)
 - [meep_waveguide_inverse_screen.json](examples/campaigns/meep_waveguide_inverse_screen.json)
 - [qe_to_meep_photonic_screen.json](examples/campaigns/qe_to_meep_photonic_screen.json)
 - [qe_to_lammps_forcefield_bootstrap.json](examples/campaigns/qe_to_lammps_forcefield_bootstrap.json)
@@ -142,10 +143,11 @@ Suggested progression:
 
 1. Start with `demo_campaign.json` to inspect the single-stage LAMMPS artifact lifecycle.
 2. Run `openmm_protein_relaxation.json` for a simple agent-driven molecular optimization loop.
-3. Run `meep_waveguide_inverse_screen.json` for standalone photonics screening.
-4. Move to `qe_to_meep_photonic_screen.json` or `qe_to_lammps_forcefield_bootstrap.json` for cross-simulator handoff.
-5. Use `lammps_to_elmer_multiscale_screen.json` or `devsim_to_meep_device_coupling.json` when you want an explicitly interdisciplinary workflow.
-6. Use `cross_simulator_transfer_verification.json` when the question is “did we map and record this correctly?” rather than “did we optimize it?”
+3. Run `thermoelectric_sim_to_measurement_loop.json` for a simple protocol-to-measurement feedback loop.
+4. Run `meep_waveguide_inverse_screen.json` for standalone photonics screening.
+5. Move to `qe_to_meep_photonic_screen.json` or `qe_to_lammps_forcefield_bootstrap.json` for cross-simulator handoff.
+6. Use `lammps_to_elmer_multiscale_screen.json` or `devsim_to_meep_device_coupling.json` when you want an explicitly interdisciplinary workflow.
+7. Use `cross_simulator_transfer_verification.json` when the question is “did we map and record this correctly?” rather than “did we optimize it?”
 
 ## Paper-Ready Benchmark
 
@@ -207,6 +209,33 @@ AUTOLAB_ENABLE_OPENMM=true uv run autolab run-benchmark --manifest-path benchmar
 ```
 
 In the current refined local run, all 128/128 runs succeeded, the best observed gap was `1.1845116887343465e-07`, and the mean gap across runs was `2.261867184216726e-06`. That is strong evidence that the OpenMM path can repeatedly recover the accepted `LJ13` minimum once the benchmark evaluates relaxed basin quality instead of raw random coordinates.
+
+For the new Phase-1 experimental-loop path, the repository now also includes a thermoelectric measurement benchmark:
+
+- benchmark manifest: [benchmark.json](benchmarks/thermoelectric_measurement/benchmark.json)
+- benchmark note: [thermoelectric_measurement.md](docs/benchmarks/thermoelectric_measurement.md)
+- example workflow: [thermoelectric_sim_to_measurement_loop.json](examples/campaigns/thermoelectric_sim_to_measurement_loop.json)
+
+Run it with:
+
+```bash
+uv run autolab run-benchmark --manifest-path benchmarks/thermoelectric_measurement/benchmark.json --execute-inline
+uv run python scripts/generate_thermoelectric_benchmark_plots.py
+```
+
+In the current local run, all 18/18 runs across the three benchmark tasks succeeded.
+
+| Task | Best power factor | Mean power factor | Artifact coverage | Workflow-stage coverage |
+| --- | ---: | ---: | ---: | ---: |
+| broad | `0.0027871945048813184` | `0.002396537237484774` | `1.0` | `1.0` |
+| focused | `0.003036841520352007` | `0.0027825692303721527` | `1.0` | `1.0` |
+| high-pf | `0.0033693258370941503` | `0.0032379005513877295` | `1.0` | `1.0` |
+
+This benchmark should not be described as wet-lab validation. The measurement CSVs are generated deterministically inside the `csv_measurement` stage to exercise the protocol, measurement-ingest, metrics, and provenance path before real lab data is attached.
+
+![Thermoelectric benchmark comparison](/Users/sebastianboehler/Documents/GitHub/physics_researcher/docs/benchmarks/assets/thermoelectric_measurement_comparison.png)
+
+![Thermoelectric benchmark progression](/Users/sebastianboehler/Documents/GitHub/physics_researcher/docs/benchmarks/assets/thermoelectric_measurement_progression.png)
 
 ## Parallel Execution
 

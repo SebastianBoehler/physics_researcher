@@ -60,6 +60,8 @@ class SimulatorKind(StrEnum):
     OPENMM = "openmm"
     ELMER = "elmer"
     DEVSIM = "devsim"
+    MANUAL_PROTOCOL = "manual_protocol"
+    CSV_MEASUREMENT = "csv_measurement"
 
 
 class ArtifactType(StrEnum):
