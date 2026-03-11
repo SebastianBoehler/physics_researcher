@@ -19,7 +19,7 @@ def test_script_backed_adapters_use_workdir_local_script_paths() -> None:
     openmm_spec = OpenMMSimulator(settings).create_experiment_spec(candidate)
     devsim_spec = DevsimSimulator(settings).create_experiment_spec(candidate)
 
-    assert MeepSimulator(settings).build_command(meep_spec, workdir)[1] == "run_meep.py"
+    assert MeepSimulator(settings).build_command(meep_spec, workdir)[1] == "launch.sh"
     assert OpenMMSimulator(settings).build_command(openmm_spec, workdir)[1] == "run_openmm.py"
     assert DevsimSimulator(settings).build_command(devsim_spec, workdir)[1] == "run_devsim.py"
 

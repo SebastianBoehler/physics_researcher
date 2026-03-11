@@ -19,5 +19,6 @@ artifacts/
 mlruns/
 infra/compose/data/
 apps/web/node_modules/
+apps/web/.next/
 node_modules/
 notes/

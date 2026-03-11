@@ -310,6 +310,10 @@ class CampaignService:
         with session_scope(self._settings) as session:
             return RunRepository(session).list_runs(campaign_id)
 
+    def list_campaigns(self) -> list[Campaign]:
+        with session_scope(self._settings) as session:
+            return CampaignRepository(session).list()
+
     def get_run(self, run_id: UUID) -> SimulationRun | None:
         with session_scope(self._settings) as session:
             return RunRepository(session).get_run(run_id)
@@ -317,6 +321,12 @@ class CampaignService:
     def get_artifact(self, artifact_id: UUID) -> ArtifactRecord | None:
         with session_scope(self._settings) as session:
             return ArtifactRepository(session).get(artifact_id)
+
+    def list_artifacts_for_run(
+        self, run_id: UUID, *, stage_name: str | None = None
+    ) -> list[ArtifactRecord]:
+        with session_scope(self._settings) as session:
+            return ArtifactRepository(session).list_for_run(run_id, stage_name=stage_name)
 
     def _execute_run(
         self,
@@ -598,6 +608,9 @@ class RunService:
     def __init__(self, campaign_service: CampaignService) -> None:
         self._campaign_service = campaign_service
 
+    def list_campaigns(self) -> list[Campaign]:
+        return self._campaign_service.list_campaigns()
+
     def list_runs(self, campaign_id: UUID) -> list[SimulationRun]:
         return self._campaign_service.list_runs(campaign_id)
 
@@ -611,3 +624,8 @@ class ArtifactService:
 
     def get_artifact(self, artifact_id: UUID) -> ArtifactRecord | None:
         return self._campaign_service.get_artifact(artifact_id)
+
+    def list_artifacts_for_run(
+        self, run_id: UUID, *, stage_name: str | None = None
+    ) -> list[ArtifactRecord]:
+        return self._campaign_service.list_artifacts_for_run(run_id, stage_name=stage_name)

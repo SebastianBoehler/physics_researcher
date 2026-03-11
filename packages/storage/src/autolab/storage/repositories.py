@@ -124,6 +124,10 @@ class CampaignRepository:
             return None
         return self._to_domain(row)
 
+    def list(self) -> list[Campaign]:
+        rows = self._session.scalars(select(CampaignORM).order_by(CampaignORM.created_at.desc())).all()
+        return [self._to_domain(row) for row in rows]
+
     def update_status(self, campaign_id: UUID, status: CampaignStatus) -> Campaign:
         row = self._session.get(CampaignORM, str(campaign_id))
         if row is None:
@@ -386,6 +390,30 @@ class ArtifactRepository:
             )
             for row in rows
         ]
+
+    def list_for_run(self, run_id: UUID, stage_name: str | None = None) -> list[ArtifactRecord]:
+        rows = self._session.scalars(
+            select(ArtifactORM)
+            .where(ArtifactORM.run_id == str(run_id))
+            .order_by(ArtifactORM.created_at)
+        ).all()
+        records = [
+            ArtifactRecord(
+                id=UUID(row.id),
+                campaign_id=UUID(row.campaign_id),
+                run_id=UUID(row.run_id) if row.run_id else None,
+                artifact_type=ArtifactType(row.artifact_type),
+                path=row.path,
+                media_type=row.media_type,
+                sha256=row.sha256,
+                metadata=row.metadata_payload,
+                created_at=row.created_at,
+            )
+            for row in rows
+        ]
+        if stage_name is None:
+            return records
+        return [record for record in records if record.metadata.get("stage_name") == stage_name]
 
 
 class StageExecutionRepository:

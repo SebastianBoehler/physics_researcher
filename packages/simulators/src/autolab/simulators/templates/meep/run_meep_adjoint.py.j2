@@ -1,0 +1,272 @@
+import json
+
+import autograd.numpy as npa
+import meep as mp
+import meep.adjoint as mpa
+import numpy as np
+
+
+class SafeOptimizationProblem(mpa.OptimizationProblem):
+    def adjoint_run(self):
+        self.prepare_adjoint_run()
+
+        if mpa.utils._check_if_cylindrical(self.sim):
+            self.sim.change_m(-self.sim.m)
+
+        if self.sim.k_point:
+            self.sim.change_k_point(-1 * self.sim.k_point)
+
+        self.adjoint_design_region_monitors = []
+        for ar in range(len(self.objective_functions)):
+            self.sim.restart_fields()
+            self.sim.clear_dft_monitors()
+            self.sim.change_sources(self.adjoint_sources[ar])
+            self.adjoint_design_region_monitors.append(
+                mpa.utils.install_design_region_monitors(
+                    self.sim,
+                    self.design_regions,
+                    self.frequencies,
+                    self.decimation_factor,
+                )
+            )
+            # The JAX wrapper reinitializes the simulation before the adjoint run.
+            # Doing the same here avoids stale simulator state in the native step path.
+            self.sim.init_sim()
+            self.sim.run(
+                *self.step_funcs,
+                until_after_sources=mp.stop_when_dft_decayed(
+                    self.decay_by, self.minimum_run_time, self.maximum_run_time
+                ),
+            )
+
+        if mpa.utils._check_if_cylindrical(self.sim):
+            self.sim.change_m(-self.sim.m)
+
+        if self.sim.k_point:
+            self.sim.change_k_point(-1 * self.sim.k_point)
+
+        self.current_state = "ADJ"
+
+
+def apply_mapping(raw_weights, beta):
+    mapped = np.asarray(raw_weights, dtype=float).reshape(nx, ny)
+    if minimum_feature_size > 0:
+        mapped = np.asarray(
+            mpa.conic_filter(
+                mapped,
+                minimum_feature_size,
+                design_region_x,
+                design_region_y,
+                design_resolution,
+            )
+        )
+    mapped = np.asarray(mpa.tanh_projection(mapped, beta, eta))
+    return np.clip(mapped, 0.0, 1.0)
+
+
+def to_power(values):
+    array = np.asarray(values)
+    return np.real(array * np.conj(array))
+
+
+device_kind = "{{ device_kind | default('adjoint_splitter', true) }}"
+resolution = {{ resolution }}
+design_resolution = {{ design_resolution | default(resolution, true) }}
+cell = mp.Vector3({{ sx }}, {{ sy }}, 0)
+boundary_layers = [mp.PML({{ dpml }})]
+core = mp.Medium(index={{ refractive_index }})
+cladding = mp.Medium(index={{ cladding_index | default(1.0, true) }})
+
+design_region_x = {{ design_region_x | default(3.0, true) }}
+design_region_y = {{ design_region_y | default(2.4, true) }}
+design_center_x = {{ design_region_center_x | default(0.0, true) }}
+design_center_y = {{ design_region_center_y | default(0.0, true) }}
+minimum_feature_size = {{ minimum_feature_size | default(0.12, true) }}
+eta = {{ eta | default(0.5, true) }}
+step_size = {{ step_size | default(0.08, true) }}
+beta_start = {{ beta_start | default(2.0, true) }}
+beta_scale = {{ beta_scale | default(1.35, true) }}
+beta_max = {{ beta_max | default(14.0, true) }}
+adjoint_iterations = {{ adjoint_iterations | default(12, true) }}
+imbalance_weight = {{ imbalance_weight | default(0.25, true) }}
+
+fcen = {{ fcen }}
+df = {{ df }}
+nfreq = {{ nfreq }}
+frequencies = np.linspace(fcen - 0.5 * df, fcen + 0.5 * df, nfreq)
+
+nx = max(2, int(round(design_region_x * design_resolution)) + 1)
+ny = max(2, int(round(design_region_y * design_resolution)) + 1)
+material_grid = mp.MaterialGrid(
+    mp.Vector3(nx, ny, 0),
+    cladding,
+    core,
+    weights=np.full((nx, ny), 0.5),
+)
+design_region = mpa.DesignRegion(
+    material_grid,
+    volume=mp.Volume(
+        center=mp.Vector3(design_center_x, design_center_y, 0),
+        size=mp.Vector3(design_region_x, design_region_y, 0),
+    ),
+)
+
+geometry = [
+    mp.Block(
+        size=mp.Vector3({{ input_length | default(4.0, true) }}, {{ input_width | default(1.0, true) }}, mp.inf),
+        center=mp.Vector3(
+            -0.5 * {{ sx }} + {{ dpml }} + 0.5 * {{ input_length | default(4.0, true) }},
+            0,
+            0,
+        ),
+        material=core,
+    ),
+    mp.Block(
+        size=mp.Vector3({{ output_length | default(4.0, true) }}, {{ output_width | default(1.0, true) }}, mp.inf),
+        center=mp.Vector3(
+            0.5 * {{ sx }} - {{ dpml }} - 0.5 * {{ output_length | default(4.0, true) }},
+            0.5 * {{ arm_separation | default(3.0, true) }},
+            0,
+        ),
+        material=core,
+    ),
+    mp.Block(
+        size=mp.Vector3({{ output_length | default(4.0, true) }}, {{ output_width | default(1.0, true) }}, mp.inf),
+        center=mp.Vector3(
+            0.5 * {{ sx }} - {{ dpml }} - 0.5 * {{ output_length | default(4.0, true) }},
+            -0.5 * {{ arm_separation | default(3.0, true) }},
+            0,
+        ),
+        material=core,
+    ),
+    mp.Block(
+        center=mp.Vector3(design_center_x, design_center_y, 0),
+        size=mp.Vector3(design_region_x, design_region_y, mp.inf),
+        material=material_grid,
+    ),
+]
+
+sources = [
+    mp.EigenModeSource(
+        src=mp.GaussianSource(fcen, fwidth=df),
+        center=mp.Vector3(-0.5 * {{ sx }} + {{ dpml }} + 0.6, 0, 0),
+        size=mp.Vector3(0, 2.0 * {{ input_width | default(1.0, true) }}, 0),
+        direction=mp.NO_DIRECTION,
+        eig_kpoint=mp.Vector3(1, 0, 0),
+        eig_band=1,
+        eig_parity=mp.ODD_Z,
+    )
+]
+
+sim = mp.Simulation(
+    cell_size=cell,
+    boundary_layers=boundary_layers,
+    geometry=geometry,
+    sources=sources,
+    resolution=resolution,
+    default_material=cladding,
+)
+
+upper_volume = mp.Volume(
+    center=mp.Vector3(
+        0.5 * {{ sx }} - {{ dpml }} - 0.7,
+        0.5 * {{ arm_separation | default(3.0, true) }},
+        0,
+    ),
+    size=mp.Vector3(0, 1.8 * {{ output_width | default(1.0, true) }}, 0),
+)
+lower_volume = mp.Volume(
+    center=mp.Vector3(
+        0.5 * {{ sx }} - {{ dpml }} - 0.7,
+        -0.5 * {{ arm_separation | default(3.0, true) }},
+        0,
+    ),
+    size=mp.Vector3(0, 1.8 * {{ output_width | default(1.0, true) }}, 0),
+)
+
+upper_mode = mpa.EigenmodeCoefficient(sim, upper_volume, mode=1, forward=True)
+lower_mode = mpa.EigenmodeCoefficient(sim, lower_volume, mode=1, forward=True)
+
+
+def splitter_objective(upper_coeff, lower_coeff):
+    upper_power = npa.real(upper_coeff * npa.conj(upper_coeff))
+    lower_power = npa.real(lower_coeff * npa.conj(lower_coeff))
+    return npa.mean(
+        upper_power + lower_power - imbalance_weight * npa.abs(upper_power - lower_power)
+    )
+
+
+optimization_problem = SafeOptimizationProblem(
+    simulation=sim,
+    objective_functions=[splitter_objective],
+    objective_arguments=[upper_mode, lower_mode],
+    design_regions=[design_region],
+    frequencies=frequencies,
+    minimum_run_time=max(10.0, 0.25 * {{ until | default(60, true) }}),
+    maximum_run_time={{ until | default(60, true) }},
+)
+
+raw_weights = np.full(nx * ny, 0.5)
+best_weights = raw_weights.copy()
+best_objective = -np.inf
+objective_history = []
+beta_history = []
+gradient_norm_history = []
+
+for iteration in range(adjoint_iterations):
+    beta = min(beta_start * (beta_scale ** iteration), beta_max)
+    mapped = apply_mapping(raw_weights, beta).reshape(-1)
+    objective_value, gradient = optimization_problem([mapped], need_value=True, need_gradient=True)
+    objective_scalar = float(np.real(np.asarray(objective_value).squeeze()))
+    gradient_array = np.real(np.asarray(gradient).squeeze())
+    if gradient_array.ndim == 2:
+        gradient_vector = gradient_array.mean(axis=1)
+    else:
+        gradient_vector = gradient_array.reshape(-1)
+    gradient_norm = float(np.linalg.norm(gradient_vector))
+
+    objective_history.append(objective_scalar)
+    beta_history.append(float(beta))
+    gradient_norm_history.append(gradient_norm)
+
+    if objective_scalar > best_objective:
+        best_objective = objective_scalar
+        best_weights = raw_weights.copy()
+
+    if gradient_norm <= 1.0e-12:
+        break
+
+    raw_weights = np.clip(raw_weights + step_size * gradient_vector / gradient_norm, 0.0, 1.0)
+
+final_mapped = apply_mapping(best_weights, beta_max).reshape(-1)
+final_objective, _ = optimization_problem([final_mapped], need_value=True, need_gradient=False)
+upper_coeff, lower_coeff = optimization_problem.get_objective_arguments()
+upper_power = to_power(upper_coeff).tolist()
+lower_power = to_power(lower_coeff).tolist()
+combined = (to_power(upper_coeff) + to_power(lower_coeff)).tolist()
+
+with open("adjoint_results.json", "w", encoding="utf-8") as handle:
+    json.dump(
+        {
+            "device_kind": "splitter",
+            "adjoint_device_kind": device_kind,
+            "frequencies": [float(value) for value in frequencies],
+            "objective_history": objective_history,
+            "beta_history": beta_history,
+            "gradient_norm_history": gradient_norm_history,
+            "final_design_weights": [float(value) for value in final_mapped],
+            "design_grid_shape": [nx, ny],
+            "monitors": {
+                "upper": [float(value) for value in upper_power],
+                "lower": [float(value) for value in lower_power],
+                "transmission": [float(value) for value in combined],
+            },
+            "adjoint_summary": {
+                "final_objective": float(np.real(np.asarray(final_objective).squeeze())),
+                "best_objective": float(best_objective),
+                "iterations_completed": len(objective_history),
+            },
+        },
+        handle,
+        indent=2,
+    )

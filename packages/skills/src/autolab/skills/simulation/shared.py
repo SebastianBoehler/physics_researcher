@@ -225,6 +225,9 @@ def get_simulation_skill_specs() -> list[SkillSpec[Any, Any]]:
             CreateExperimentSpecInput,
             CreateExperimentSpecOutput,
             _create_experiment_spec,
+            domain="simulation",
+            tags=["workflow", "spec"],
+            required_context=["simulator_registry"],
         ),
         SkillSpec(
             "select_simulator_workflow",
@@ -232,6 +235,9 @@ def get_simulation_skill_specs() -> list[SkillSpec[Any, Any]]:
             SelectSimulatorWorkflowInput,
             SelectSimulatorWorkflowOutput,
             _select_simulator_workflow,
+            domain="simulation",
+            tags=["workflow", "planning"],
+            required_context=["simulator_registry"],
         ),
         SkillSpec(
             "generate_simulation_artifacts",
@@ -239,6 +245,9 @@ def get_simulation_skill_specs() -> list[SkillSpec[Any, Any]]:
             GenerateSimulationArtifactsInput,
             GenerateSimulationArtifactsOutput,
             _generate_simulation_artifacts,
+            domain="simulation",
+            tags=["artifacts", "generation"],
+            required_context=["simulator_registry"],
         ),
         SkillSpec(
             "launch_simulation_stage",
@@ -246,6 +255,9 @@ def get_simulation_skill_specs() -> list[SkillSpec[Any, Any]]:
             LaunchSimulationStageInput,
             LaunchSimulationStageOutput,
             _launch_simulation_stage,
+            domain="simulation",
+            tags=["execution", "workflow"],
+            required_context=["simulator_registry"],
         ),
         SkillSpec(
             "poll_simulation_stage",
@@ -253,6 +265,8 @@ def get_simulation_skill_specs() -> list[SkillSpec[Any, Any]]:
             PollSimulationStageInput,
             PollSimulationStageOutput,
             _poll_simulation_stage,
+            domain="simulation",
+            tags=["execution", "status"],
         ),
         SkillSpec(
             "parse_simulation_stage",
@@ -260,6 +274,9 @@ def get_simulation_skill_specs() -> list[SkillSpec[Any, Any]]:
             ParseSimulationStageInput,
             ParseSimulationStageOutput,
             _parse_simulation_stage,
+            domain="simulation",
+            tags=["parsing", "metrics"],
+            required_context=["simulator_registry"],
         ),
         SkillSpec(
             "validate_simulation_stage",
@@ -267,6 +284,9 @@ def get_simulation_skill_specs() -> list[SkillSpec[Any, Any]]:
             ValidateSimulationStageInput,
             ValidateSimulationStageOutput,
             _validate_simulation_stage,
+            domain="simulation",
+            tags=["validation", "workflow"],
+            required_context=["simulator_registry"],
         ),
         SkillSpec(
             "collect_stage_summary",
@@ -274,6 +294,8 @@ def get_simulation_skill_specs() -> list[SkillSpec[Any, Any]]:
             CollectStageSummaryInput,
             CollectStageSummaryOutput,
             _collect_stage_summary,
+            domain="simulation",
+            tags=["summary", "workflow"],
         ),
         SkillSpec(
             "store_simulation_artifacts",
@@ -281,6 +303,8 @@ def get_simulation_skill_specs() -> list[SkillSpec[Any, Any]]:
             StoreSimulationArtifactsInput,
             StoreSimulationArtifactsOutput,
             _store_simulation_artifacts,
+            domain="simulation",
+            tags=["artifacts", "workflow"],
         ),
         SkillSpec(
             "link_stage_outputs_to_next_stage",
@@ -288,5 +312,7 @@ def get_simulation_skill_specs() -> list[SkillSpec[Any, Any]]:
             LinkStageOutputsToNextStageInput,
             LinkStageOutputsToNextStageOutput,
             _link_stage_outputs_to_next_stage,
+            domain="simulation",
+            tags=["mapping", "workflow"],
         ),
     ]

@@ -3,7 +3,12 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
-from autolab.agents import LiteraturePaperInput, LiteratureResearchResult
+from autolab.agents import (
+    LiteraturePaperInput,
+    LiteratureResearchResult,
+    PeptideBenchmarkExpectation,
+    PeptideResearchResult,
+)
 from autolab.core.enums import (
     CampaignMode,
     CampaignStatus,
@@ -14,6 +19,7 @@ from autolab.core.enums import (
     SimulatorKind,
 )
 from autolab.core.models import (
+    ArtifactRecord,
     CampaignBudget,
     Constraint,
     Objective,
@@ -25,6 +31,7 @@ from autolab.core.models import (
     SimulationRun,
     SimulationWorkflow,
 )
+from autolab.skills import SkillMetadata
 from pydantic import BaseModel, Field
 
 
@@ -53,6 +60,10 @@ class CampaignResponse(BaseModel):
     tags: list[str]
 
 
+class CampaignListResponse(BaseModel):
+    campaigns: list[CampaignResponse]
+
+
 class StepCampaignRequest(BaseModel):
     execute_inline: bool = False
 
@@ -70,6 +81,30 @@ class HealthResponse(BaseModel):
 
 class RunListResponse(BaseModel):
     runs: list[SimulationRun]
+
+
+class ArtifactListResponse(BaseModel):
+    artifacts: list[ArtifactRecord]
+
+
+class SkillListResponse(BaseModel):
+    skills: list[SkillMetadata]
+
+
+class BenchmarkReportIndexEntry(BaseModel):
+    benchmark_name: str
+    description: str = ""
+    paper_hypothesis: str = ""
+    primary_metric: str = ""
+    generated_at: str = ""
+    report_path: str
+    manifest_path: str | None = None
+    task_count: int = 0
+    summary: dict[str, Any] = Field(default_factory=dict)
+
+
+class BenchmarkReportIndexResponse(BaseModel):
+    reports: list[BenchmarkReportIndexEntry]
 
 
 class ReviewParticipantInput(BaseModel):
@@ -133,3 +168,18 @@ class LiteratureResearchRequest(BaseModel):
 
 class LiteratureResearchResponse(BaseModel):
     result: LiteratureResearchResult
+
+
+class PeptideResearchRequest(BaseModel):
+    mode: ResearchMode | None = None
+    prompt: str
+    notes: str | None = None
+    application_area: str = "cosmetic"
+    max_reference_peptides: int = Field(default=5, ge=1, le=10)
+    max_candidates: int = Field(default=3, ge=0, le=10)
+    benchmark: PeptideBenchmarkExpectation | None = None
+    include_markdown: bool = True
+
+
+class PeptideResearchResponse(BaseModel):
+    result: PeptideResearchResult

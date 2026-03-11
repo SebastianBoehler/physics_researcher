@@ -12,6 +12,20 @@ def test_builtin_skill_registry_contains_expected_skills() -> None:
     assert "launch_simulation_stage" in names
 
 
+def test_skill_registry_exports_machine_readable_metadata() -> None:
+    registry = get_builtin_skills()
+
+    skills = registry.list_metadata(domain="simulation")
+
+    assert skills
+    launch_stage = next(skill for skill in skills if skill.name == "launch_simulation_stage")
+    assert launch_stage.domain == "simulation"
+    assert launch_stage.trust_level == "execution_safe"
+    assert "simulator_registry" in launch_stage.required_context
+    assert launch_stage.input_schema["type"] == "object"
+    assert launch_stage.output_schema["type"] == "object"
+
+
 def test_rank_candidates_skill_orders_by_prediction() -> None:
     registry = get_builtin_skills()
     skill = registry.get("rank_candidates")

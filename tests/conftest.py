@@ -6,6 +6,7 @@ import pytest
 from autolab.api.dependencies import (
     get_campaign_service,
     get_literature_research_service,
+    get_peptide_research_service,
     get_review_service,
 )
 from autolab.core.settings import get_settings
@@ -21,4 +22,5 @@ def reset_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     get_settings.cache_clear()
     get_campaign_service.cache_clear()
     get_literature_research_service.cache_clear()
+    get_peptide_research_service.cache_clear()
     get_review_service.cache_clear()

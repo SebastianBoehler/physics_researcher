@@ -1,0 +1,19 @@
+{
+  "default_version": "1.1.0",
+  "datasets": [
+    {
+      "version": "1.0.0",
+      "filename": "peptide_references.v1.json",
+      "dataset_id": "cosmetic-peptide-market-neighborhoods",
+      "scope": "cosmetic_peptides",
+      "description": "Curated cosmetic-peptide references with lightweight literature-backed evidence fields."
+    },
+    {
+      "version": "1.1.0",
+      "filename": "peptide_references.v1.1.0.json",
+      "dataset_id": "cosmetic-peptide-market-neighborhoods",
+      "scope": "cosmetic_peptides",
+      "description": "Curated cosmetic-peptide references with lightweight literature-backed evidence fields, generated from canonical seed records."
+    }
+  ]
+}

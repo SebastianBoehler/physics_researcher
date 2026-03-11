@@ -1,0 +1,12 @@
+{
+  "prompt": "fewer wrinkles around the eyes",
+  "application_area": "cosmetic",
+  "max_reference_peptides": 5,
+  "max_candidates": 3,
+  "benchmark": {
+    "claim_clusters": ["fewer_wrinkles"],
+    "mechanisms": ["cosmetic_neuromodulation"],
+    "families": ["neuromodulatory_cosmetic_peptide"]
+  },
+  "include_markdown": true
+}

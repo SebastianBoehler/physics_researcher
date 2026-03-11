@@ -1,0 +1,426 @@
+{
+  "dataset_id": "cosmetic-peptide-market-neighborhoods",
+  "version": "1.1.0",
+  "scope": "cosmetic_peptides",
+  "generated_on": "2026-03-11",
+  "description": "Curated cosmetic-peptide references with lightweight literature-backed evidence fields, generated from canonical seed records.",
+  "entries": [
+    {
+      "peptide_id": "ghk",
+      "name": "Tripeptide-1",
+      "sequence": "GHK",
+      "family": "signal_peptide",
+      "claim_clusters": [
+        "barrier_repair",
+        "firmer_skin",
+        "clearer_skin"
+      ],
+      "mechanisms": [
+        "repair_signaling",
+        "collagen_signal",
+        "barrier_support"
+      ],
+      "modifications": [],
+      "aliases": [
+        "GHK"
+      ],
+      "evidence_level": "literature_supported",
+      "rationale": "Small repair-oriented signal peptide commonly used as a cosmetic reference.",
+      "evidence": {
+        "tier": "review_backed",
+        "summary": "GHK and related copper-peptide systems are repeatedly discussed as repair and remodeling motifs in topical peptide reviews.",
+        "citations": [
+          {
+            "citation_id": "pmid:39963574",
+            "title": "Peptide peptides and skin: A review of their chemistry and clinical applications",
+            "year": 2025,
+            "journal": "Int J Cosmet Sci",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/39963574/",
+            "doi": "10.1111/ics.13067",
+            "pmid": "39963574",
+            "evidence_type": "review",
+            "supports": [
+              "repair_signaling",
+              "collagen_signal"
+            ]
+          },
+          {
+            "citation_id": "pmid:27451932",
+            "title": "Peptides and proteins in skin care",
+            "year": 2016,
+            "journal": "Facial Plast Surg Clin North Am",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/27451932/",
+            "doi": "10.1016/j.fsc.2016.03.003",
+            "pmid": "27451932",
+            "evidence_type": "review",
+            "supports": [
+              "barrier_support",
+              "cosmetic_use"
+            ]
+          }
+        ],
+        "caveats": [
+          "Most topical evidence is review-level rather than large controlled clinical datasets."
+        ]
+      }
+    },
+    {
+      "peptide_id": "ghk-cu",
+      "name": "Copper Tripeptide-1",
+      "sequence": "GHK",
+      "family": "copper_peptide",
+      "claim_clusters": [
+        "barrier_repair",
+        "firmer_skin",
+        "clearer_skin"
+      ],
+      "mechanisms": [
+        "repair_signaling",
+        "collagen_signal",
+        "barrier_support"
+      ],
+      "modifications": [
+        "copper_bound"
+      ],
+      "aliases": [
+        "GHK-Cu",
+        "copper peptide"
+      ],
+      "evidence_level": "literature_supported",
+      "rationale": "Repair-focused copper-peptide neighborhood for barrier and remodeling claims.",
+      "evidence": {
+        "tier": "review_backed",
+        "summary": "Copper tripeptide systems are repeatedly cited for wound-healing and remodeling contexts, with cosmetic translation discussed in reviews.",
+        "citations": [
+          {
+            "citation_id": "pmid:39963574",
+            "title": "Peptide peptides and skin: A review of their chemistry and clinical applications",
+            "year": 2025,
+            "journal": "Int J Cosmet Sci",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/39963574/",
+            "doi": "10.1111/ics.13067",
+            "pmid": "39963574",
+            "evidence_type": "review",
+            "supports": [
+              "repair_signaling",
+              "collagen_signal"
+            ]
+          },
+          {
+            "citation_id": "pmid:22666519",
+            "title": "Copper tripeptide-1 and skin",
+            "year": 2012,
+            "journal": "Biofactors",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/22666519/",
+            "doi": "10.1002/biof.1031",
+            "pmid": "22666519",
+            "evidence_type": "review",
+            "supports": [
+              "repair_signaling",
+              "skin_remodeling"
+            ]
+          }
+        ],
+        "caveats": [
+          "Clinical anti-wrinkle evidence is weaker than the mechanistic wound-repair literature."
+        ]
+      }
+    },
+    {
+      "peptide_id": "pal-ghk",
+      "name": "Palmitoyl Tripeptide-1",
+      "sequence": "GHK",
+      "family": "lipopeptide_signal",
+      "claim_clusters": [
+        "firmer_skin",
+        "barrier_repair",
+        "fewer_wrinkles"
+      ],
+      "mechanisms": [
+        "collagen_signal",
+        "repair_signaling",
+        "extracellular_matrix_support"
+      ],
+      "modifications": [
+        "palmitoyl"
+      ],
+      "aliases": [
+        "Pal-GHK"
+      ],
+      "evidence_level": "literature_supported",
+      "rationale": "Lipidated signal-peptide motif often used for collagen-support positioning.",
+      "evidence": {
+        "tier": "review_backed",
+        "summary": "Palmitoylated signal peptides are described in cosmetic reviews as ECM-support motifs that improve delivery and product compatibility.",
+        "citations": [
+          {
+            "citation_id": "pmid:34382523",
+            "title": "Signal Peptides: Promising Ingredients in Cosmetics",
+            "year": 2021,
+            "journal": "Curr Protein Pept Sci",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/34382523/",
+            "doi": "10.2174/1389203722666210804150819",
+            "pmid": "34382523",
+            "evidence_type": "review",
+            "supports": [
+              "collagen_signal",
+              "cosmetic_delivery"
+            ]
+          },
+          {
+            "citation_id": "pmid:27451932",
+            "title": "Peptides and proteins in skin care",
+            "year": 2016,
+            "journal": "Facial Plast Surg Clin North Am",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/27451932/",
+            "doi": "10.1016/j.fsc.2016.03.003",
+            "pmid": "27451932",
+            "evidence_type": "review",
+            "supports": [
+              "extracellular_matrix_support"
+            ]
+          }
+        ],
+        "caveats": [
+          "Evidence is stronger at the family level than for palmitoyl tripeptide-1 alone."
+        ]
+      }
+    },
+    {
+      "peptide_id": "pal-kttks",
+      "name": "Palmitoyl Pentapeptide-4",
+      "sequence": "KTTKS",
+      "family": "lipopeptide_signal",
+      "claim_clusters": [
+        "fewer_wrinkles",
+        "firmer_skin"
+      ],
+      "mechanisms": [
+        "collagen_signal",
+        "extracellular_matrix_support"
+      ],
+      "modifications": [
+        "palmitoyl"
+      ],
+      "aliases": [
+        "Pal-KTTKS",
+        "Matrixyl"
+      ],
+      "evidence_level": "literature_supported",
+      "rationale": "Canonical signal-peptide benchmark for wrinkle-softening and firmness claims.",
+      "evidence": {
+        "tier": "clinical_supported",
+        "summary": "Pal-KTTKS has one of the cleaner cosmetic evidence stories among signal peptides, including controlled topical anti-wrinkle data and repeated review coverage.",
+        "citations": [
+          {
+            "citation_id": "pmid:18492182",
+            "title": "Palmitoyl-lysyl-threonyl-threonyl-lysyl-serine improves fine lines and wrinkles",
+            "year": 2005,
+            "journal": "Int J Cosmet Sci",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/18492182/",
+            "doi": "10.1111/j.1467-2494.2005.00277.x",
+            "pmid": "18492182",
+            "evidence_type": "clinical",
+            "supports": [
+              "fewer_wrinkles",
+              "firmness"
+            ]
+          },
+          {
+            "citation_id": "pmid:34382523",
+            "title": "Signal Peptides: Promising Ingredients in Cosmetics",
+            "year": 2021,
+            "journal": "Curr Protein Pept Sci",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/34382523/",
+            "doi": "10.2174/1389203722666210804150819",
+            "pmid": "34382523",
+            "evidence_type": "review",
+            "supports": [
+              "collagen_signal",
+              "extracellular_matrix_support"
+            ]
+          }
+        ],
+        "caveats": [
+          "Study sizes remain small by pharmaceutical standards."
+        ]
+      }
+    },
+    {
+      "peptide_id": "pal-gqpr",
+      "name": "Palmitoyl Tetrapeptide-7",
+      "sequence": "GQPR",
+      "family": "lipopeptide_signal",
+      "claim_clusters": [
+        "clearer_skin",
+        "barrier_repair",
+        "firmer_skin"
+      ],
+      "mechanisms": [
+        "inflammation_modulation",
+        "barrier_support",
+        "repair_signaling"
+      ],
+      "modifications": [
+        "palmitoyl"
+      ],
+      "aliases": [
+        "Pal-GQPR"
+      ],
+      "evidence_level": "literature_supported",
+      "rationale": "Often grouped with repair and anti-inflammatory cosmetic peptide systems.",
+      "evidence": {
+        "tier": "review_backed",
+        "summary": "Palmitoyl tetrapeptide-7 is usually discussed as part of anti-inflammatory and sensitive-skin peptide systems rather than as a stand-alone clinically mature ingredient.",
+        "citations": [
+          {
+            "citation_id": "pmid:34382523",
+            "title": "Signal Peptides: Promising Ingredients in Cosmetics",
+            "year": 2021,
+            "journal": "Curr Protein Pept Sci",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/34382523/",
+            "doi": "10.2174/1389203722666210804150819",
+            "pmid": "34382523",
+            "evidence_type": "review",
+            "supports": [
+              "inflammation_modulation",
+              "cosmetic_use"
+            ]
+          },
+          {
+            "citation_id": "pmid:34451799",
+            "title": "Active ingredients against human epidermal barrier impairment and sensitive skin",
+            "year": 2022,
+            "journal": "Ann Dermatol Venereol",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/34451799/",
+            "doi": "10.1016/j.annder.2019.05.007",
+            "pmid": "34451799",
+            "evidence_type": "review",
+            "supports": [
+              "barrier_support",
+              "sensitive_skin"
+            ]
+          }
+        ],
+        "caveats": [
+          "Most accessible evidence is review-level and often bundled with other peptides."
+        ]
+      }
+    },
+    {
+      "peptide_id": "acetyl-hexapeptide-8",
+      "name": "Acetyl Hexapeptide-8",
+      "sequence": "EEMQRR",
+      "family": "neuromodulatory_cosmetic_peptide",
+      "claim_clusters": [
+        "fewer_wrinkles"
+      ],
+      "mechanisms": [
+        "cosmetic_neuromodulation"
+      ],
+      "modifications": [
+        "acetylated",
+        "amidated"
+      ],
+      "aliases": [
+        "Argireline"
+      ],
+      "evidence_level": "literature_supported",
+      "rationale": "Reference neuromodulatory cosmetic peptide for expression-line softening prompts.",
+      "evidence": {
+        "tier": "clinical_supported",
+        "summary": "Argireline is one of the better documented neuromodulatory cosmetic peptides, with controlled topical data but still modest overall evidence depth.",
+        "citations": [
+          {
+            "citation_id": "pmid:23417317",
+            "title": "Anti-wrinkle effects of a topical applied acetyl hexapeptide-8 in Asian skin",
+            "year": 2013,
+            "journal": "Int J Cosmet Sci",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/23417317/",
+            "doi": "10.1111/ics.12040",
+            "pmid": "23417317",
+            "evidence_type": "clinical",
+            "supports": [
+              "fewer_wrinkles",
+              "cosmetic_neuromodulation"
+            ]
+          },
+          {
+            "citation_id": "pmid:27451932",
+            "title": "Peptides and proteins in skin care",
+            "year": 2016,
+            "journal": "Facial Plast Surg Clin North Am",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/27451932/",
+            "doi": "10.1016/j.fsc.2016.03.003",
+            "pmid": "27451932",
+            "evidence_type": "review",
+            "supports": [
+              "cosmetic_use",
+              "fewer_wrinkles"
+            ]
+          }
+        ],
+        "caveats": [
+          "Topical wrinkle changes are measurable but not equivalent to injectable neuromodulator outcomes."
+        ]
+      }
+    },
+    {
+      "peptide_id": "acetyl-octapeptide-3",
+      "name": "Acetyl Octapeptide-3",
+      "sequence": "EEMQRRAD",
+      "family": "neuromodulatory_cosmetic_peptide",
+      "claim_clusters": [
+        "fewer_wrinkles"
+      ],
+      "mechanisms": [
+        "cosmetic_neuromodulation"
+      ],
+      "modifications": [
+        "acetylated",
+        "amidated"
+      ],
+      "aliases": [
+        "SNAP-8"
+      ],
+      "evidence_level": "literature_supported",
+      "rationale": "Extended Argireline-like motif used in wrinkle-softening product neighborhoods.",
+      "evidence": {
+        "tier": "review_backed",
+        "summary": "SNAP-8 is mostly supported by derivative and category-level cosmetic peptide reviews rather than robust stand-alone clinical datasets.",
+        "citations": [
+          {
+            "citation_id": "pmid:27451932",
+            "title": "Peptides and proteins in skin care",
+            "year": 2016,
+            "journal": "Facial Plast Surg Clin North Am",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/27451932/",
+            "doi": "10.1016/j.fsc.2016.03.003",
+            "pmid": "27451932",
+            "evidence_type": "review",
+            "supports": [
+              "cosmetic_neuromodulation",
+              "fewer_wrinkles"
+            ]
+          },
+          {
+            "citation_id": "pmid:34451799",
+            "title": "Active ingredients against human epidermal barrier impairment and sensitive skin",
+            "year": 2022,
+            "journal": "Ann Dermatol Venereol",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/34451799/",
+            "doi": "10.1016/j.annder.2019.05.007",
+            "pmid": "34451799",
+            "evidence_type": "review",
+            "supports": [
+              "cosmetic_use"
+            ]
+          }
+        ],
+        "caveats": [
+          "Evidence is mostly extrapolated from the neuromodulatory cosmetic peptide family."
+        ]
+      }
+    }
+  ]
+}

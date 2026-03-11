@@ -223,6 +223,9 @@ def get_builtin_skills() -> SkillRegistry:
             ProposeCandidatesInput,
             ProposeCandidatesOutput,
             _propose_candidates,
+            domain="campaigns",
+            tags=["planning", "optimizer", "campaigns"],
+            required_context=["campaign_service", "optimizer"],
         ),
         SkillSpec(
             "launch_simulation",
@@ -230,6 +233,9 @@ def get_builtin_skills() -> SkillRegistry:
             LaunchSimulationInput,
             LaunchSimulationOutput,
             _launch_simulation,
+            domain="simulation",
+            tags=["execution", "simulation"],
+            required_context=["simulator_registry"],
         ),
         SkillSpec(
             "parse_simulation_result",
@@ -237,6 +243,8 @@ def get_builtin_skills() -> SkillRegistry:
             ParseSimulationResultInput,
             ParseSimulationResultOutput,
             _parse_result,
+            domain="analysis",
+            tags=["analysis", "metrics"],
         ),
         SkillSpec(
             "validate_constraints",
@@ -244,6 +252,8 @@ def get_builtin_skills() -> SkillRegistry:
             ValidateConstraintsInput,
             ValidateConstraintsOutput,
             _validate_constraints,
+            domain="campaigns",
+            tags=["constraints", "validation"],
         ),
         SkillSpec(
             "summarize_campaign_state",
@@ -251,6 +261,8 @@ def get_builtin_skills() -> SkillRegistry:
             SummarizeCampaignStateInput,
             SummarizeCampaignStateOutput,
             _summarize_campaign_state,
+            domain="analysis",
+            tags=["summary", "campaigns"],
         ),
         SkillSpec(
             "select_next_batch",
@@ -258,6 +270,8 @@ def get_builtin_skills() -> SkillRegistry:
             SelectNextBatchInput,
             SelectNextBatchOutput,
             _select_next_batch,
+            domain="campaigns",
+            tags=["selection", "optimizer"],
         ),
         SkillSpec(
             "write_run_report",
@@ -265,6 +279,8 @@ def get_builtin_skills() -> SkillRegistry:
             WriteRunReportInput,
             WriteRunReportOutput,
             _write_run_report,
+            domain="analysis",
+            tags=["reporting"],
         ),
         SkillSpec(
             "detect_failed_runs",
@@ -272,6 +288,8 @@ def get_builtin_skills() -> SkillRegistry:
             DetectFailedRunsInput,
             DetectFailedRunsOutput,
             _detect_failed_runs,
+            domain="analysis",
+            tags=["failure-analysis"],
         ),
         SkillSpec(
             "rank_candidates",
@@ -279,6 +297,8 @@ def get_builtin_skills() -> SkillRegistry:
             RankCandidatesInput,
             RankCandidatesOutput,
             _rank_candidates,
+            domain="campaigns",
+            tags=["ranking", "optimizer"],
         ),
         SkillSpec(
             "compare_recent_experiments",
@@ -286,6 +306,8 @@ def get_builtin_skills() -> SkillRegistry:
             CompareRecentExperimentsInput,
             CompareRecentExperimentsOutput,
             _compare_recent,
+            domain="analysis",
+            tags=["comparison", "metrics"],
         ),
         *get_simulation_skill_specs(),
     ]

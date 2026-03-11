@@ -106,3 +106,4 @@ class ReviewRoundStatus(StrEnum):
 
 class ResearchMode(StrEnum):
     LITERATURE_RESEARCH = "literature_research"
+    PEPTIDE_RESEARCH = "peptide_research"

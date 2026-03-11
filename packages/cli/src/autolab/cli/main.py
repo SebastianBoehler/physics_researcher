@@ -125,6 +125,41 @@ def research_literature(
     print(response.json())
 
 
+@app.command("research-peptides")
+def research_peptides(
+    prompt: str,
+    notes: str | None = None,
+    application_area: str = "cosmetic",
+    expected_claim_cluster: list[str] | None = None,
+    expected_mechanism: list[str] | None = None,
+    expected_family: list[str] | None = None,
+    max_reference_peptides: int = 5,
+    max_candidates: int = 3,
+    include_markdown: bool = True,
+) -> None:
+    payload = {
+        "prompt": prompt,
+        "notes": notes,
+        "application_area": application_area,
+        "max_reference_peptides": max_reference_peptides,
+        "max_candidates": max_candidates,
+        "benchmark": {
+            "claim_clusters": expected_claim_cluster or [],
+            "mechanisms": expected_mechanism or [],
+            "families": expected_family or [],
+        },
+        "include_markdown": include_markdown,
+    }
+    response = httpx.post(
+        f"{_base_url()}/peptide-research",
+        json=payload,
+        headers=_headers(),
+        timeout=60.0,
+    )
+    response.raise_for_status()
+    print(response.json())
+
+
 @app.command("open-review")
 def open_review(
     campaign_id: str,

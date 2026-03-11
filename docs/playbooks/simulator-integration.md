@@ -31,6 +31,8 @@ docker compose --profile lammps run --rm --no-deps worker-lammps uv run pytest t
 - The `MeepSimulator` adapter generates a Python driver, launch script, manifests, logs, and spectrum summary JSON.
 - Enable it with `AUTOLAB_ENABLE_MEEP=true`. By default it uses the configured Python interpreter, so the `meep` Python module must be installed in that environment.
 - If MEEP lives in a separate conda environment, point the adapter at that interpreter with `AUTOLAB_MEEP_BIN=/path/to/env/bin/python`.
+- The new adjoint workflow also needs `meep.adjoint` dependencies in that interpreter. In the current local setup this required installing `autograd` into the `autolab-meep` environment.
+- The adjoint path now emits `adjoint_error.json` when the native driver aborts before writing `adjoint_results.json`. This keeps engine/runtime failures distinguishable from parser failures in benchmark reports.
 
 ## Quantum ESPRESSO, OpenMM, Elmer, and DEVSIM
 

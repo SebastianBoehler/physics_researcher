@@ -72,6 +72,14 @@ def test_meep_photonic_advanced_benchmark_manifest_loads() -> None:
     assert manifest.evaluation["top_k_sizes"] == [3]
 
 
+def test_meep_adjoint_benchmark_manifest_loads() -> None:
+    manifest = load_benchmark_manifest(Path("benchmarks/meep_adjoint_devices/benchmark.json"))
+    assert manifest.name == "meep-adjoint-devices-v1"
+    assert manifest.primary_metric == "splitter_excess_loss_db"
+    assert len(manifest.campaigns) == 1
+    assert manifest.evaluation["reference_direction"] == "minimize"
+
+
 def test_thermoelectric_benchmark_manifest_loads() -> None:
     manifest = load_benchmark_manifest(Path("benchmarks/thermoelectric_measurement/benchmark.json"))
     assert manifest.name == "thermoelectric-measurement-v1"
@@ -92,6 +100,12 @@ def test_benchmark_campaigns_validate_against_api_schema() -> None:
         assert campaign.workflow is not None
         if "advanced" in campaign.name:
             assert "optimizer" in campaign.metadata
+    for path in sorted(Path("benchmarks/meep_adjoint_devices/campaigns").glob("*.json")):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        campaign = CreateCampaignRequest.model_validate(payload)
+        assert campaign.name.startswith("benchmark-meep-adjoint-")
+        assert campaign.workflow is not None
+        assert campaign.workflow.stages[0].task.name == "meep_adjoint_device"
     lj_cluster_payload = json.loads(
         Path(
             "benchmarks/openmm_lj13_cluster/campaigns/openmm_lj13_cluster_seed_31.json"

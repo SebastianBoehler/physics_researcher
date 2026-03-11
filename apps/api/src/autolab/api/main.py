@@ -10,18 +10,28 @@ from autolab.agents import (
 )
 from autolab.agents import (
     LiteratureResearchService,
+    PeptideResearchService,
     ReviewRuntimeUnavailableError,
+)
+from autolab.agents import (
+    PeptideResearchRequest as AgentPeptideResearchRequest,
 )
 from autolab.api.dependencies import (
     get_artifact_service,
+    get_benchmark_report_service,
     get_campaign_service,
     get_literature_research_service,
+    get_peptide_research_service,
     get_queue,
     get_review_service,
     get_run_service,
+    get_skill_registry,
     require_admin_token,
 )
 from autolab.api.schemas import (
+    ArtifactListResponse,
+    BenchmarkReportIndexResponse,
+    CampaignListResponse,
     CampaignResponse,
     CreateCampaignRequest,
     CreateReviewPostRequest,
@@ -29,6 +39,8 @@ from autolab.api.schemas import (
     HealthResponse,
     LiteratureResearchRequest,
     LiteratureResearchResponse,
+    PeptideResearchRequest,
+    PeptideResearchResponse,
     ResolveReviewRequest,
     ReviewDetailResponse,
     ReviewListResponse,
@@ -36,11 +48,13 @@ from autolab.api.schemas import (
     ReviewRoundRequest,
     ReviewRoundResponse,
     RunListResponse,
+    SkillListResponse,
     StepCampaignRequest,
     StepCampaignResponse,
 )
 from autolab.campaigns import (
     ArtifactService,
+    BenchmarkReportService,
     CampaignEvent,
     CampaignQueue,
     CampaignService,
@@ -55,8 +69,10 @@ from autolab.core.models import (
     SimulationRun,
 )
 from autolab.core.settings import get_settings
+from autolab.skills import SkillRegistry
 from autolab.telemetry import setup_logging
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 
 
 @asynccontextmanager
@@ -67,6 +83,13 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title="Autolab API", version="0.1.0", lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=get_settings().app.web_allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -82,6 +105,27 @@ def health() -> HealthResponse:
     )
 
 
+@app.get("/skills", response_model=SkillListResponse)
+def list_skills(
+    domain: str | None = None,
+    source: str | None = None,
+    trust_level: str | None = None,
+    _: str = Depends(require_admin_token),
+    registry: SkillRegistry = Depends(get_skill_registry),
+) -> SkillListResponse:
+    return SkillListResponse(
+        skills=registry.list_metadata(domain=domain, source=source, trust_level=trust_level)
+    )
+
+
+@app.get("/benchmarks/reports", response_model=BenchmarkReportIndexResponse)
+def list_benchmark_reports(
+    _: str = Depends(require_admin_token),
+    service: BenchmarkReportService = Depends(get_benchmark_report_service),
+) -> BenchmarkReportIndexResponse:
+    return BenchmarkReportIndexResponse(reports=service.list_reports())
+
+
 @app.post("/literature-research", response_model=LiteratureResearchResponse)
 def run_literature_research(
     request: LiteratureResearchRequest,
@@ -95,6 +139,21 @@ def run_literature_research(
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     return LiteratureResearchResponse(result=result)
+
+
+@app.post("/peptide-research", response_model=PeptideResearchResponse)
+def run_peptide_research(
+    request: PeptideResearchRequest,
+    _: str = Depends(require_admin_token),
+    service: PeptideResearchService = Depends(get_peptide_research_service),
+) -> PeptideResearchResponse:
+    try:
+        result = service.run(
+            AgentPeptideResearchRequest.model_validate(request.model_dump(mode="json"))
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    return PeptideResearchResponse(result=result)
 
 
 @app.post("/campaigns", response_model=CampaignResponse, status_code=status.HTTP_201_CREATED)
@@ -113,6 +172,28 @@ def create_campaign(
         mode=created.mode,
         budget=created.budget,
         tags=created.tags,
+    )
+
+
+@app.get("/campaigns", response_model=CampaignListResponse)
+def list_campaigns(
+    _: str = Depends(require_admin_token),
+    service: RunService = Depends(get_run_service),
+) -> CampaignListResponse:
+    campaigns = service.list_campaigns()
+    return CampaignListResponse(
+        campaigns=[
+            CampaignResponse(
+                id=campaign.id,
+                name=campaign.name,
+                status=campaign.status,
+                simulator=campaign.simulator,
+                mode=campaign.mode,
+                budget=campaign.budget,
+                tags=campaign.tags,
+            )
+            for campaign in campaigns
+        ]
     )
 
 
@@ -211,6 +292,18 @@ def get_run(
     if run is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Run not found.")
     return run
+
+
+@app.get("/runs/{run_id}/artifacts", response_model=ArtifactListResponse)
+def list_run_artifacts(
+    run_id: UUID,
+    stage_name: str | None = None,
+    _: str = Depends(require_admin_token),
+    service: ArtifactService = Depends(get_artifact_service),
+) -> ArtifactListResponse:
+    return ArtifactListResponse(
+        artifacts=service.list_artifacts_for_run(run_id, stage_name=stage_name)
+    )
 
 
 @app.get("/artifacts/{artifact_id}")

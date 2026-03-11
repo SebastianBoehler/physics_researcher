@@ -13,6 +13,16 @@ class AppConfig(BaseSettings):
     api_host: str = "127.0.0.1"
     api_port: int = 8000
     artifact_root: Path = Path("artifacts")
+    web_allowed_origins: list[str] = Field(
+        default_factory=lambda: [
+            "http://127.0.0.1:3000",
+            "http://localhost:3000",
+            "http://127.0.0.1:4173",
+            "http://localhost:4173",
+            "http://127.0.0.1:8080",
+            "http://localhost:8080",
+        ]
+    )
     execution_mode: str = "async"
     max_parallel_runs: int = 1
     max_parallel_benchmark_campaigns: int = 1

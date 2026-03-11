@@ -32,6 +32,7 @@ The planned product surface for a materials workbench is outlined in [docs/archi
 The current product positioning is described in [docs/playbooks/materials-positioning.md](docs/playbooks/materials-positioning.md).
 The next skill and simulator milestones are tracked in [docs/playbooks/materials-skill-and-simulator-roadmap.md](docs/playbooks/materials-skill-and-simulator-roadmap.md).
 The photonics upgrade path toward adjoint-driven experiments is tracked in [docs/playbooks/photonics-adjoint-roadmap.md](docs/playbooks/photonics-adjoint-roadmap.md).
+The first adjoint benchmark scaffold and its current runtime status are documented in [docs/benchmarks/meep_adjoint_devices.md](docs/benchmarks/meep_adjoint_devices.md).
 
 ## Core capabilities
 
@@ -245,6 +246,19 @@ It also regresses on some quantities that matter:
 - demux isolation: `1.08 dB` -> `0.89 dB`
 
 So the current conclusion is narrower than "the advanced pipeline wins." The framework can now run a more realistic coarse-to-fine photonic search and improve several device metrics, but the geometry family and objective design are still limiting the final device quality.
+
+The first freeform adjoint scaffold is also now in-repo:
+
+- benchmark manifest: [benchmark.json](benchmarks/meep_adjoint_devices/benchmark.json)
+- benchmark note: [meep_adjoint_devices.md](docs/benchmarks/meep_adjoint_devices.md)
+
+Run it with:
+
+```bash
+AUTOLAB_ENABLE_MEEP=true AUTOLAB_MEEP_BIN=/Users/sebastianboehler/miniconda3/envs/autolab-meep/bin/python uv run autolab run-benchmark --manifest-path benchmarks/meep_adjoint_devices/benchmark.json --execute-inline
+```
+
+This is not yet a successful photonic result. It is the first integrated `MaterialGrid` and `meep.adjoint` benchmark path in Autolab. In the current local environment the smoke run still aborts inside native MEEP during the adjoint phase, but the framework now captures that cleanly through `adjoint_error.json` and surfaces it as an engine/runtime blocker instead of a parse failure.
 
 To regenerate the comparison figures between the initial suite and the latest refined rerun:
 

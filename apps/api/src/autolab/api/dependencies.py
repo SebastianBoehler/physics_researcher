@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from autolab.agents import LiteratureResearchService
+from autolab.agents import LiteratureResearchService, PeptideResearchService
 from autolab.campaigns import (
     ArtifactService,
+    BenchmarkReportService,
     CampaignQueue,
     CampaignService,
     ReviewService,
@@ -12,6 +13,7 @@ from autolab.campaigns import (
 )
 from autolab.core.settings import Settings, get_settings
 from autolab.simulators import build_default_registry
+from autolab.skills import SkillRegistry, get_builtin_skills
 from autolab.storage import init_db
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -39,6 +41,18 @@ def get_artifact_service(
 
 
 @lru_cache(maxsize=1)
+def get_skill_registry() -> SkillRegistry:
+    return get_builtin_skills()
+
+
+@lru_cache(maxsize=1)
+def get_benchmark_report_service() -> BenchmarkReportService:
+    settings = get_settings()
+    settings.ensure_directories()
+    return BenchmarkReportService(settings)
+
+
+@lru_cache(maxsize=1)
 def get_review_service() -> ReviewService:
     settings = get_settings()
     init_db(settings)
@@ -49,6 +63,12 @@ def get_review_service() -> ReviewService:
 def get_literature_research_service() -> LiteratureResearchService:
     settings = get_settings()
     return LiteratureResearchService(settings=settings)
+
+
+@lru_cache(maxsize=1)
+def get_peptide_research_service() -> PeptideResearchService:
+    settings = get_settings()
+    return PeptideResearchService(settings=settings)
 
 
 def get_queue(settings: Settings = Depends(get_settings)) -> CampaignQueue:
