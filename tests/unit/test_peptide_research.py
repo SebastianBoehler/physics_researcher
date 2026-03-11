@@ -44,6 +44,7 @@ def test_peptide_research_service_maps_wrinkles_to_neuromodulatory_family() -> N
 
     assert result.normalized_claims[0].claim_cluster == "fewer_wrinkles"
     assert result.mechanism_rankings[0].mechanism == "cosmetic_neuromodulation"
+    assert result.purpose_rankings[0].purpose == "wrinkle_softening"
     assert "neuromodulatory_cosmetic_peptide" in {
         family.family for family in result.family_rankings[:3]
     }
@@ -72,3 +73,23 @@ def test_peptide_research_service_generates_filtered_candidates() -> None:
     assert len(result.candidate_peptides) == 2
     assert result.candidate_peptides[0].filter_report.passed_filters
     assert result.benchmark.market_neighborhood_recall > 0.0
+
+
+def test_peptide_research_service_decides_between_multiple_purposes() -> None:
+    service = PeptideResearchService(get_settings())
+
+    result = service.run(
+        PeptideResearchRequest(
+            prompt="clearer skin and stronger barrier repair for stressed skin",
+            max_candidates=1,
+        )
+    )
+
+    assert result.purpose_rankings
+    assert result.purpose_rankings[0].purpose in {
+        "skin_clarity_support",
+        "barrier_repair_support",
+    }
+    assert {
+        purpose.purpose for purpose in result.purpose_rankings[:2]
+    } == {"skin_clarity_support", "barrier_repair_support"}

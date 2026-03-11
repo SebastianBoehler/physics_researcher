@@ -15,6 +15,7 @@ from autolab.agents.peptide_models import (
     PeptideDescriptor,
     PeptideResearchRequest,
     PeptideResearchResult,
+    PurposeMatch,
     ReferencePeptide,
 )
 from autolab.agents.peptide_reference_data import load_reference_dataset
@@ -108,6 +109,38 @@ _CLAIM_RULES: Final[dict[str, dict[str, object]]] = {
         },
     },
 }
+_PURPOSE_RULES: Final[dict[str, dict[str, object]]] = {
+    "skin_clarity_support": {
+        "claims": ("clearer_skin",),
+        "mechanisms": ("inflammation_modulation", "barrier_support"),
+        "recommended_application_area": "cosmetic",
+    },
+    "wrinkle_softening": {
+        "claims": ("fewer_wrinkles",),
+        "mechanisms": ("cosmetic_neuromodulation", "collagen_signal"),
+        "recommended_application_area": "cosmetic",
+    },
+    "barrier_repair_support": {
+        "claims": ("barrier_repair",),
+        "mechanisms": ("barrier_support", "repair_signaling"),
+        "recommended_application_area": "cosmetic",
+    },
+    "firmness_support": {
+        "claims": ("firmer_skin",),
+        "mechanisms": ("collagen_signal", "extracellular_matrix_support"),
+        "recommended_application_area": "cosmetic",
+    },
+    "muscle_recovery_support": {
+        "claims": ("faster_muscle_recovery",),
+        "mechanisms": ("regenerative_support", "anabolic_recovery"),
+        "recommended_application_area": "therapeutic",
+    },
+    "cognitive_support": {
+        "claims": ("memory_support",),
+        "mechanisms": ("neurotrophic_support", "receptor_modulation"),
+        "recommended_application_area": "therapeutic",
+    },
+}
 _PEPTIDE_KEYWORDS: Final[tuple[str, ...]] = (
     "peptide",
     "wrinkle",
@@ -168,11 +201,17 @@ class PeptideResearchService:
 
         claims = self._normalize_claims(prompt, request.notes)
         mechanisms = self._rank_mechanisms(claims)
+        purposes = self._rank_purposes(
+            claims=claims,
+            mechanisms=mechanisms,
+            application_area=request.application_area,
+        )
         references = self._retrieve_reference_peptides(
             prompt=prompt,
             application_area=request.application_area,
             claims=claims,
             mechanisms=mechanisms,
+            purposes=purposes,
             max_items=request.max_reference_peptides,
         )
         families = self._rank_families(references, mechanisms)
@@ -195,6 +234,7 @@ class PeptideResearchService:
             application_area=request.application_area,
             normalized_claims=claims,
             mechanism_rankings=mechanisms,
+            purpose_rankings=purposes,
             family_rankings=families,
             reference_peptides=references,
             candidate_peptides=candidates,
@@ -268,6 +308,62 @@ class PeptideResearchService:
             for mechanism, score in mechanism_scores.most_common()
         ]
 
+    def _rank_purposes(
+        self,
+        *,
+        claims: list[ClaimClusterMatch],
+        mechanisms: list[MechanismMatch],
+        application_area: str,
+    ) -> list[PurposeMatch]:
+        claim_lookup = {claim.claim_cluster: claim.score for claim in claims}
+        mechanism_lookup = {mechanism.mechanism: mechanism.score for mechanism in mechanisms}
+        matches: list[PurposeMatch] = []
+        for purpose, config in _PURPOSE_RULES.items():
+            supported_claims = [
+                claim_name
+                for claim_name in config["claims"]
+                if claim_name in claim_lookup
+            ]
+            supported_mechanisms = [
+                mechanism_name
+                for mechanism_name in config["mechanisms"]
+                if mechanism_name in mechanism_lookup
+            ]
+            if not supported_claims and not supported_mechanisms:
+                continue
+            score = (
+                sum(claim_lookup.get(claim_name, 0.0) for claim_name in config["claims"]) * 0.55
+                + sum(
+                    mechanism_lookup.get(mechanism_name, 0.0)
+                    for mechanism_name in config["mechanisms"]
+                )
+                * 0.45
+            )
+            recommended_application_area = str(config["recommended_application_area"])
+            if recommended_application_area == application_area:
+                score += 0.15
+            coverage = "weak"
+            if score >= 1.2:
+                coverage = "strong"
+            elif score >= 0.6:
+                coverage = "partial"
+            matches.append(
+                PurposeMatch(
+                    purpose=purpose,
+                    score=round(min(score, 2.0), 3),
+                    supporting_claim_clusters=supported_claims,
+                    supporting_mechanisms=supported_mechanisms,
+                    recommended_application_area=recommended_application_area,  # type: ignore[arg-type]
+                    coverage=coverage,  # type: ignore[arg-type]
+                    rationale=(
+                        f"{purpose} is supported by claim clusters "
+                        f"{', '.join(supported_claims) or 'none'} and mechanisms "
+                        f"{', '.join(supported_mechanisms) or 'none'}."
+                    ),
+                )
+            )
+        return sorted(matches, key=lambda item: item.score, reverse=True)
+
     def _retrieve_reference_peptides(
         self,
         *,
@@ -275,11 +371,17 @@ class PeptideResearchService:
         application_area: str,
         claims: list[ClaimClusterMatch],
         mechanisms: list[MechanismMatch],
+        purposes: list[PurposeMatch],
         max_items: int,
     ) -> list[ReferencePeptide]:
         haystack = prompt.lower()
         claim_lookup = {claim.claim_cluster: claim.score for claim in claims}
         top_mechanisms = {mechanism.mechanism: mechanism.score for mechanism in mechanisms[:4]}
+        top_purpose_mechanisms = {
+            mechanism
+            for purpose in purposes[:2]
+            for mechanism in purpose.supporting_mechanisms
+        }
         matches: list[ReferencePeptide] = []
         for raw_reference in self._dataset.entries:
             claim_overlap = sum(
@@ -294,8 +396,17 @@ class PeptideResearchService:
             for alias in [*raw_reference.aliases, raw_reference.name]:
                 alias_bonus += 0.25 if str(alias).lower() in haystack else 0.0
             area_bonus = 0.1 if application_area == "cosmetic" else 0.0
+            purpose_bonus = (
+                0.15
+                if top_purpose_mechanisms.intersection(raw_reference.mechanisms)
+                else 0.0
+            )
             retrieval_score = round(
-                claim_overlap * 0.45 + mechanism_overlap * 0.45 + alias_bonus + area_bonus,
+                claim_overlap * 0.4
+                + mechanism_overlap * 0.4
+                + alias_bonus
+                + area_bonus
+                + purpose_bonus,
                 3,
             )
             descriptors = self._describe_sequence(raw_reference.sequence)
@@ -507,6 +618,10 @@ class PeptideResearchService:
             f"- `{mechanism.mechanism}` ({mechanism.score:.2f})"
             for mechanism in result.mechanism_rankings[:4]
         )
+        purpose_lines = "\n".join(
+            f"- `{purpose.purpose}` ({purpose.score:.2f}, `{purpose.coverage}`)"
+            for purpose in result.purpose_rankings[:4]
+        )
         family_lines = "\n".join(
             f"- `{family.family}` ({family.score:.2f})"
             for family in result.family_rankings[:3]
@@ -524,6 +639,7 @@ class PeptideResearchService:
             f"# Peptide research: {result.prompt}\n\n"
             f"## Claim normalization\n{claim_lines or '- none'}\n\n"
             f"## Mechanisms\n{mechanism_lines or '- none'}\n\n"
+            f"## Purposes\n{purpose_lines or '- none'}\n\n"
             f"## Families\n{family_lines or '- none'}\n\n"
             f"## Reference peptides\n{reference_lines or '- none'}\n\n"
             f"## Candidate peptides\n{candidate_lines or '- none'}\n\n"

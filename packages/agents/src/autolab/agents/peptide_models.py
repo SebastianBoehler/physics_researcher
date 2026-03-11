@@ -27,6 +27,16 @@ class MechanismMatch(AutolabModel):
     rationale: str
 
 
+class PurposeMatch(AutolabModel):
+    purpose: str
+    score: float
+    supporting_claim_clusters: list[str] = Field(default_factory=list)
+    supporting_mechanisms: list[str] = Field(default_factory=list)
+    recommended_application_area: Literal["cosmetic", "therapeutic", "general"]
+    coverage: Literal["strong", "partial", "weak"] = "partial"
+    rationale: str
+
+
 class PeptideDescriptor(AutolabModel):
     length: int
     net_charge: int
@@ -148,6 +158,7 @@ class PeptideResearchResult(AutolabModel):
     application_area: str
     normalized_claims: list[ClaimClusterMatch] = Field(default_factory=list)
     mechanism_rankings: list[MechanismMatch] = Field(default_factory=list)
+    purpose_rankings: list[PurposeMatch] = Field(default_factory=list)
     family_rankings: list[FamilyMatch] = Field(default_factory=list)
     reference_peptides: list[ReferencePeptide] = Field(default_factory=list)
     candidate_peptides: list[CandidatePeptide] = Field(default_factory=list)

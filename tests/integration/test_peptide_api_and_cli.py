@@ -10,6 +10,7 @@ from autolab.agents.peptide_models import (
     MechanismMatch,
     PeptideBenchmarkSummary,
     PeptideDescriptor,
+    PurposeMatch,
     ReferencePeptide,
 )
 from autolab.api.dependencies import get_peptide_research_service
@@ -48,6 +49,17 @@ class StubPeptideService(PeptideResearchService):
                     mechanism="cosmetic_neuromodulation",
                     score=0.96,
                     supporting_claim_clusters=["fewer_wrinkles"],
+                    rationale="stub",
+                )
+            ],
+            purpose_rankings=[
+                PurposeMatch(
+                    purpose="wrinkle_softening",
+                    score=1.2,
+                    supporting_claim_clusters=["fewer_wrinkles"],
+                    supporting_mechanisms=["cosmetic_neuromodulation"],
+                    recommended_application_area="cosmetic",
+                    coverage="strong",
                     rationale="stub",
                 )
             ],
