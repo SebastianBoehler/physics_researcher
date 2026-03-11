@@ -23,7 +23,7 @@ The claim is not that the repository invents a new photonics solver. The claim i
 
 ## Benchmark suite
 
-The suite manifest lives at [`benchmarks/meep_inverse_design/benchmark.json`](/Users/sebastianboehler/Documents/GitHub/physics_researcher/benchmarks/meep_inverse_design/benchmark.json).
+The suite manifest lives at [`benchmarks/meep_inverse_design/benchmark.json`](../../benchmarks/meep_inverse_design/benchmark.json).
 
 Included tasks:
 

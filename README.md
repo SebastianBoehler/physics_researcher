@@ -233,9 +233,9 @@ In the current local run, all 18/18 runs across the three benchmark tasks succee
 
 This benchmark should not be described as wet-lab validation. The measurement CSVs are generated deterministically inside the `csv_measurement` stage to exercise the protocol, measurement-ingest, metrics, and provenance path before real lab data is attached.
 
-![Thermoelectric benchmark comparison](/Users/sebastianboehler/Documents/GitHub/physics_researcher/docs/benchmarks/assets/thermoelectric_measurement_comparison.png)
+![Thermoelectric benchmark comparison](docs/benchmarks/assets/thermoelectric_measurement_comparison.png)
 
-![Thermoelectric benchmark progression](/Users/sebastianboehler/Documents/GitHub/physics_researcher/docs/benchmarks/assets/thermoelectric_measurement_progression.png)
+![Thermoelectric benchmark progression](docs/benchmarks/assets/thermoelectric_measurement_progression.png)
 
 ## Parallel Execution
 

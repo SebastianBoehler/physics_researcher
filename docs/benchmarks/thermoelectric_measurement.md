@@ -21,7 +21,7 @@ The CSV measurement values are generated deterministically inside the `csv_measu
 
 ## Benchmark suite
 
-The suite manifest lives at [`benchmarks/thermoelectric_measurement/benchmark.json`](/Users/sebastianboehler/Documents/GitHub/physics_researcher/benchmarks/thermoelectric_measurement/benchmark.json).
+The suite manifest lives at [`benchmarks/thermoelectric_measurement/benchmark.json`](../../benchmarks/thermoelectric_measurement/benchmark.json).
 
 Included tasks:
 
@@ -72,6 +72,6 @@ Task-level results:
 
 That monotonic improvement is the useful benchmark signal here: tighter prior knowledge improved measured-loop outcomes without sacrificing reproducibility metadata.
 
-![Thermoelectric benchmark comparison](/Users/sebastianboehler/Documents/GitHub/physics_researcher/docs/benchmarks/assets/thermoelectric_measurement_comparison.png)
+![Thermoelectric benchmark comparison](assets/thermoelectric_measurement_comparison.png)
 
-![Thermoelectric benchmark progression](/Users/sebastianboehler/Documents/GitHub/physics_researcher/docs/benchmarks/assets/thermoelectric_measurement_progression.png)
+![Thermoelectric benchmark progression](assets/thermoelectric_measurement_progression.png)
