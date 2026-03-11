@@ -64,11 +64,11 @@ The current local benchmark completed all 18/18 runs successfully across the thr
 
 Task-level results:
 
-| Task | Best power factor | Mean power factor | Artifact coverage | Workflow-stage coverage |
-| --- | ---: | ---: | ---: | ---: |
-| broad | `0.0027871945048813184` | `0.002396537237484774` | `1.0` | `1.0` |
-| focused | `0.003036841520352007` | `0.0027825692303721527` | `1.0` | `1.0` |
-| high-pf | `0.0033693258370941503` | `0.0032379005513877295` | `1.0` | `1.0` |
+| Task    |       Best power factor |       Mean power factor | Artifact coverage | Workflow-stage coverage |
+| ------- | ----------------------: | ----------------------: | ----------------: | ----------------------: |
+| broad   | `0.0027871945048813184` |  `0.002396537237484774` |             `1.0` |                   `1.0` |
+| focused |  `0.003036841520352007` | `0.0027825692303721527` |             `1.0` |                   `1.0` |
+| high-pf | `0.0033693258370941503` | `0.0032379005513877295` |             `1.0` |                   `1.0` |
 
 That monotonic improvement is the useful benchmark signal here: tighter prior knowledge improved measured-loop outcomes without sacrificing reproducibility metadata.
 

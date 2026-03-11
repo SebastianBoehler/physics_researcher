@@ -17,10 +17,7 @@ Example request:
 ```json
 {
   "topic": "Quantum sensor stability",
-  "papers": [
-    { "arxiv_id": "2401.12345" },
-    { "url": "https://arxiv.org/abs/2402.54321" }
-  ],
+  "papers": [{ "arxiv_id": "2401.12345" }, { "url": "https://arxiv.org/abs/2402.54321" }],
   "notes": "Review the literature and compare papers.",
   "include_markdown": true
 }

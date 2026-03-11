@@ -52,7 +52,9 @@
       "method_sensitive_conclusions": []
     },
     "synthesis": {
-      "collective_beliefs": ["Single-paper evidence suggests: This study shows quantum sensor stability improves accuracy"],
+      "collective_beliefs": [
+        "Single-paper evidence suggests: This study shows quantum sensor stability improves accuracy"
+      ],
       "contested_questions": [],
       "shared_assumptions": [],
       "promising_next_steps": [],
@@ -62,7 +64,9 @@
     "assumptions": [],
     "knowledge_map": {
       "central_claim": "Single-paper evidence suggests: This study shows quantum sensor stability improves accuracy",
-      "supporting_pillars": ["Single-paper evidence suggests: This study shows quantum sensor stability improves accuracy"],
+      "supporting_pillars": [
+        "Single-paper evidence suggests: This study shows quantum sensor stability improves accuracy"
+      ],
       "contested_zones": [],
       "frontier_questions": []
     },

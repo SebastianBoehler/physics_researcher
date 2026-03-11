@@ -13,9 +13,21 @@
   "constraints": [],
   "search_space": {
     "dimensions": [
-      { "name": "temperature", "kind": "continuous", "lower": 280.0, "upper": 320.0, "choices": [] },
+      {
+        "name": "temperature",
+        "kind": "continuous",
+        "lower": 280.0,
+        "upper": 320.0,
+        "choices": []
+      },
       { "name": "steps", "kind": "integer", "lower": 25, "upper": 250, "choices": [] },
-      { "name": "spring_constant", "kind": "continuous", "lower": 5.0, "upper": 60.0, "choices": [] }
+      {
+        "name": "spring_constant",
+        "kind": "continuous",
+        "lower": 5.0,
+        "upper": 60.0,
+        "choices": []
+      }
     ]
   },
   "budget": {

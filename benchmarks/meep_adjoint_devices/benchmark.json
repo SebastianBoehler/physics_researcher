@@ -1,0 +1,25 @@
+{
+  "name": "meep-adjoint-devices-v1",
+  "description": "First adjoint-driven photonic-device benchmark using a single MaterialGrid splitter task.",
+  "paper_hypothesis": "A dedicated MEEP adjoint workflow can outperform the current block-based splitter path and establish a reproducible freeform photonics baseline.",
+  "primary_metric": "splitter_excess_loss_db",
+  "campaigns": ["benchmarks/meep_adjoint_devices/campaigns/adjoint_splitter_smoke.json"],
+  "evaluation": {
+    "report_fields": [
+      "best_metric",
+      "median_metric",
+      "mean_metric",
+      "succeeded_runs",
+      "failed_runs",
+      "timed_out_runs",
+      "artifact_coverage",
+      "workflow_stage_coverage"
+    ],
+    "reference_direction": "minimize",
+    "top_k_sizes": [1],
+    "baseline_notes": [
+      "This is the first adjoint smoke benchmark, not a literature-facing performance benchmark.",
+      "Judge the run on reproducibility, artifact capture, and whether it materially beats the current block-based splitter baseline."
+    ]
+  }
+}

@@ -27,7 +27,13 @@
     "dimensions": [
       { "name": "block_x", "kind": "continuous", "lower": 1.0, "upper": 4.5, "choices": [] },
       { "name": "block_y", "kind": "continuous", "lower": 2.5, "upper": 6.5, "choices": [] },
-      { "name": "refractive_index", "kind": "continuous", "lower": 2.2, "upper": 3.8, "choices": [] }
+      {
+        "name": "refractive_index",
+        "kind": "continuous",
+        "lower": 2.2,
+        "upper": 3.8,
+        "choices": []
+      }
     ]
   },
   "budget": {

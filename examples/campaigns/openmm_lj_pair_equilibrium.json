@@ -21,7 +21,13 @@
     "dimensions": [
       { "name": "system_kind", "kind": "categorical", "choices": ["lj_pair"] },
       { "name": "platform_name", "kind": "categorical", "choices": ["CPU"] },
-      { "name": "initial_distance", "kind": "continuous", "lower": 0.25, "upper": 0.8, "choices": [] },
+      {
+        "name": "initial_distance",
+        "kind": "continuous",
+        "lower": 0.25,
+        "upper": 0.8,
+        "choices": []
+      },
       { "name": "temperature", "kind": "continuous", "lower": 1.0, "upper": 1.1, "choices": [] },
       { "name": "steps", "kind": "integer", "lower": 0, "upper": 1, "choices": [] },
       { "name": "friction", "kind": "continuous", "lower": 1.0, "upper": 1.1, "choices": [] },

@@ -3,9 +3,7 @@
   "description": "A live OpenMM Lennard-Jones cluster benchmark that tests whether the optimization loop can approach the accepted LJ13 global minimum on a rugged many-body energy landscape.",
   "paper_hypothesis": "The current agentic Autolab loop should expose its scaling and local-minima behavior on LJ13, making the gap to the accepted cluster minimum a useful many-body optimizer benchmark.",
   "primary_metric": "energy_gap_to_reference",
-  "campaigns": [
-    "benchmarks/openmm_lj13_cluster/campaigns/openmm_lj13_cluster_seed_31.json"
-  ],
+  "campaigns": ["benchmarks/openmm_lj13_cluster/campaigns/openmm_lj13_cluster_seed_31.json"],
   "evaluation": {
     "reference_best_metric": 0.0,
     "reference_direction": "minimize",

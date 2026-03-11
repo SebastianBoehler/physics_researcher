@@ -32,7 +32,7 @@
         "task": {
           "name": "qe_scf",
           "simulator": "quantum_espresso",
-          "parameters": { "ecutwfc": 30.0, "conv_thr": 1e-06 },
+          "parameters": { "ecutwfc": 30.0, "conv_thr": 1e-6 },
           "units": { "ecutwfc": "Ry" },
           "expected_outputs": ["qe.in", "stdout.log", "stderr.log"],
           "metadata": {}

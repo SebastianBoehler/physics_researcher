@@ -15,15 +15,45 @@
     "dimensions": [
       { "name": "block_x", "kind": "continuous", "lower": 3.8, "upper": 4.6, "choices": [] },
       { "name": "block_y", "kind": "continuous", "lower": 4.5, "upper": 5.3, "choices": [] },
-      { "name": "refractive_index", "kind": "continuous", "lower": 3.4, "upper": 3.9, "choices": [] },
+      {
+        "name": "refractive_index",
+        "kind": "continuous",
+        "lower": 3.4,
+        "upper": 3.9,
+        "choices": []
+      },
       { "name": "arm_separation", "kind": "continuous", "lower": 2.6, "upper": 3.1, "choices": [] },
       { "name": "output_width", "kind": "continuous", "lower": 1.0, "upper": 1.25, "choices": [] },
-      { "name": "block_center_x", "kind": "continuous", "lower": -0.2, "upper": 0.9, "choices": [] },
-      { "name": "block_center_y", "kind": "continuous", "lower": -1.2, "upper": 1.2, "choices": [] },
+      {
+        "name": "block_center_x",
+        "kind": "continuous",
+        "lower": -0.2,
+        "upper": 0.9,
+        "choices": []
+      },
+      {
+        "name": "block_center_y",
+        "kind": "continuous",
+        "lower": -1.2,
+        "upper": 1.2,
+        "choices": []
+      },
       { "name": "block2_x", "kind": "continuous", "lower": 0.8, "upper": 2.6, "choices": [] },
       { "name": "block2_y", "kind": "continuous", "lower": 0.8, "upper": 2.6, "choices": [] },
-      { "name": "block2_center_x", "kind": "continuous", "lower": -0.8, "upper": 1.2, "choices": [] },
-      { "name": "block2_center_y", "kind": "continuous", "lower": -2.4, "upper": 2.4, "choices": [] }
+      {
+        "name": "block2_center_x",
+        "kind": "continuous",
+        "lower": -0.8,
+        "upper": 1.2,
+        "choices": []
+      },
+      {
+        "name": "block2_center_y",
+        "kind": "continuous",
+        "lower": -2.4,
+        "upper": 2.4,
+        "choices": []
+      }
     ]
   },
   "budget": {

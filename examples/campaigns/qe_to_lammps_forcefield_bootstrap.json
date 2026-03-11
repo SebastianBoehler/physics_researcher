@@ -14,7 +14,13 @@
   "search_space": {
     "dimensions": [
       { "name": "ecutwfc", "kind": "continuous", "lower": 20.0, "upper": 90.0, "choices": [] },
-      { "name": "lattice_parameter", "kind": "continuous", "lower": 8.0, "upper": 12.0, "choices": [] }
+      {
+        "name": "lattice_parameter",
+        "kind": "continuous",
+        "lower": 8.0,
+        "upper": 12.0,
+        "choices": []
+      }
     ]
   },
   "budget": {
@@ -32,7 +38,7 @@
         "task": {
           "name": "qe_scf",
           "simulator": "quantum_espresso",
-          "parameters": { "ecutwfc": 35.0, "conv_thr": 1e-06, "lattice_parameter": 10.2 },
+          "parameters": { "ecutwfc": 35.0, "conv_thr": 1e-6, "lattice_parameter": 10.2 },
           "units": { "ecutwfc": "Ry", "lattice_parameter": "bohr" },
           "expected_outputs": ["qe.in", "stdout.log", "stderr.log"],
           "metadata": {}
@@ -47,7 +53,12 @@
         "task": {
           "name": "lammps_md",
           "simulator": "lammps",
-          "parameters": { "steps": 25, "ensemble": "nvt", "thermo_frequency": 5, "timestep": 0.002 },
+          "parameters": {
+            "steps": 25,
+            "ensemble": "nvt",
+            "thermo_frequency": 5,
+            "timestep": 0.002
+          },
           "units": { "timestep": "tau" },
           "expected_outputs": ["log.lammps", "stdout.log", "stderr.log"],
           "metadata": {

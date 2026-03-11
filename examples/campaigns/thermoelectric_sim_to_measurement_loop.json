@@ -20,8 +20,20 @@
   ],
   "search_space": {
     "dimensions": [
-      { "name": "dopant_fraction", "kind": "continuous", "lower": 0.08, "upper": 0.22, "choices": [] },
-      { "name": "sinter_temperature_c", "kind": "continuous", "lower": 650.0, "upper": 820.0, "choices": [] },
+      {
+        "name": "dopant_fraction",
+        "kind": "continuous",
+        "lower": 0.08,
+        "upper": 0.22,
+        "choices": []
+      },
+      {
+        "name": "sinter_temperature_c",
+        "kind": "continuous",
+        "lower": 650.0,
+        "upper": 820.0,
+        "choices": []
+      },
       { "name": "anneal_hours", "kind": "continuous", "lower": 2.0, "upper": 10.0, "choices": [] }
     ]
   },
@@ -52,7 +64,13 @@
             "process_temperature_c": "celsius",
             "dwell_time_hours": "hour"
           },
-          "expected_outputs": ["protocol.md", "recipe.json", "handoff.json", "stdout.log", "stderr.log"],
+          "expected_outputs": [
+            "protocol.md",
+            "recipe.json",
+            "handoff.json",
+            "stdout.log",
+            "stderr.log"
+          ],
           "metadata": {}
         },
         "depends_on": [],
@@ -81,7 +99,12 @@
             "auto_generate_from_candidate": true
           },
           "units": {},
-          "expected_outputs": ["measurement.csv", "measurement_ingest.json", "stdout.log", "stderr.log"],
+          "expected_outputs": [
+            "measurement.csv",
+            "measurement_ingest.json",
+            "stdout.log",
+            "stderr.log"
+          ],
           "metadata": {}
         },
         "depends_on": ["fabrication_protocol"],

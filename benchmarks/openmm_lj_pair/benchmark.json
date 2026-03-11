@@ -3,9 +3,7 @@
   "description": "A live OpenMM benchmark that measures how closely the optimization loop can recover the known Lennard-Jones equilibrium energy and separation.",
   "paper_hypothesis": "The agentic Autolab loop can approach the known Lennard-Jones optimum with a small number of real OpenMM evaluations while preserving full provenance and rerunnable artifacts.",
   "primary_metric": "energy_gap_to_reference",
-  "campaigns": [
-    "examples/campaigns/openmm_lj_pair_equilibrium.json"
-  ],
+  "campaigns": ["examples/campaigns/openmm_lj_pair_equilibrium.json"],
   "evaluation": {
     "reference_best_metric": 0.0,
     "reference_direction": "minimize",

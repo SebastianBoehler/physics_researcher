@@ -65,7 +65,15 @@
   },
   "simulator": "openmm",
   "seed": 31,
-  "tags": ["openmm", "benchmark", "lennard-jones", "cluster", "lj13", "many-body", "real-simulator"],
+  "tags": [
+    "openmm",
+    "benchmark",
+    "lennard-jones",
+    "cluster",
+    "lj13",
+    "many-body",
+    "real-simulator"
+  ],
   "metadata": {
     "operator_prompt": "Use this OpenMM LJ13 cluster benchmark to minimize the gap to the accepted global minimum energy, document whether the optimizer gets trapped in local minima, and preserve generated artifacts and parsed summaries for later cross-seed comparison.",
     "benchmark_family": "openmm_lj13_cluster",
