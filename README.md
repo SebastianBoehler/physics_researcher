@@ -28,6 +28,10 @@
 More detail is in [docs/architecture/overview.md](docs/architecture/overview.md) and [docs/adr/0001-orchestration-and-simulator-boundary.md](docs/adr/0001-orchestration-and-simulator-boundary.md).
 The stage-based workflow extension is summarized in [docs/architecture/simulator-workflows.md](docs/architecture/simulator-workflows.md).
 The literature analysis path is summarized in [docs/architecture/literature-research.md](docs/architecture/literature-research.md).
+The planned product surface for a materials workbench is outlined in [docs/architecture/materials-workbench-ui.md](docs/architecture/materials-workbench-ui.md).
+The current product positioning is described in [docs/playbooks/materials-positioning.md](docs/playbooks/materials-positioning.md).
+The next skill and simulator milestones are tracked in [docs/playbooks/materials-skill-and-simulator-roadmap.md](docs/playbooks/materials-skill-and-simulator-roadmap.md).
+The photonics upgrade path toward adjoint-driven experiments is tracked in [docs/playbooks/photonics-adjoint-roadmap.md](docs/playbooks/photonics-adjoint-roadmap.md).
 
 ## Core capabilities
 
@@ -327,11 +331,11 @@ uv run python scripts/generate_thermoelectric_benchmark_plots.py
 
 In the current local run, all 18/18 runs across the three benchmark tasks succeeded.
 
-| Task | Best power factor | Mean power factor | Artifact coverage | Workflow-stage coverage |
-| --- | ---: | ---: | ---: | ---: |
-| broad | `0.0027871945048813184` | `0.002396537237484774` | `1.0` | `1.0` |
-| focused | `0.003036841520352007` | `0.0027825692303721527` | `1.0` | `1.0` |
-| high-pf | `0.0033693258370941503` | `0.0032379005513877295` | `1.0` | `1.0` |
+| Task    |       Best power factor |       Mean power factor | Artifact coverage | Workflow-stage coverage |
+| ------- | ----------------------: | ----------------------: | ----------------: | ----------------------: |
+| broad   | `0.0027871945048813184` |  `0.002396537237484774` |             `1.0` |                   `1.0` |
+| focused |  `0.003036841520352007` | `0.0027825692303721527` |             `1.0` |                   `1.0` |
+| high-pf | `0.0033693258370941503` | `0.0032379005513877295` |             `1.0` |                   `1.0` |
 
 This benchmark should not be described as wet-lab validation. The measurement CSVs are generated deterministically inside the `csv_measurement` stage to exercise the protocol, measurement-ingest, metrics, and provenance path before real lab data is attached.
 
